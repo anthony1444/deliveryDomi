@@ -1,0 +1,83 @@
+import { Injectable } from '@angular/core';
+import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile, User, authState, onAuthStateChanged } from '@angular/fire/auth';
+import { Firestore, collection, doc, docData, getDoc, getDocs, query, setDoc, where } from '@angular/fire/firestore';
+import { Observable, of, switchMap } from 'rxjs';
+
+
+export interface UserInfo {
+    uid: string;
+    email: string;
+    name: string;
+    role: string;
+  }
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+private user: User | null = null; // Guarda la sesión del usuario
+private usersPath = 'users'; // Ruta en Firebase
+
+  constructor(private auth: Auth, private firestore: Firestore) {
+
+    onAuthStateChanged(this.auth, (user: User | null) => {
+        console.log('🔥 Usuario detectado:', user?.providerData);
+        this.user =  user
+      });
+  }
+
+  // 📌 Registrar usuario
+//   register(email: string, password: string) {
+//     return createUserWithEmailAndPassword(this.auth, email, password);
+//   }
+
+  async register(email: string, password: string, name: string, phone: string, typeUser:number) {
+    const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
+    const user = userCredential.user;
+
+    // ✅ Actualizar nombre en Firebase Auth
+    await updateProfile(user, { displayName: name });
+
+    // ✅ Guardar perfil con más datos en Firestore
+    return setDoc(doc(this.firestore, `users/${user.uid}`), {
+      uid: user.uid,
+      email: user.email,
+      name: name,
+      phone: phone,
+      typeUser: typeUser, 
+      address:'',
+      createdAt: new Date()
+    });
+  }
+
+  getUserData() {
+    return authState(this.auth).pipe(
+      switchMap(async user => {  
+        if (user) {
+          const userDocRef = doc(this.firestore, `users/${user.uid}`);
+          const docSnap = await getDoc(userDocRef);
+          return  docSnap.data();
+        }
+        return of(null);
+      })
+    );
+  }
+
+    // 📌 Obtener datos del usuario logueado en tiempo real
+
+  // 📌 Iniciar sesión
+  login(email: string, password: string) {
+    return signInWithEmailAndPassword(this.auth, email, password);
+  }
+
+  // 📌 Verifica si el usuario está autenticado
+  isLoggedIn(): boolean {
+    return JSON.parse(localStorage.getItem('user') as any) !== null;
+  } 
+
+  // 📌 Cerrar sesión
+  logout() {
+    localStorage.removeItem('user')
+    return this.auth.signOut();
+  }
+}

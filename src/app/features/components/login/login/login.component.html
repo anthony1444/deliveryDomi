@@ -1,0 +1,31 @@
+<div class="home">
+  <div class="wrapper">
+    
+      
+        <mat-card appearance="outlined" class="card">
+          <mat-card-content>
+            
+            <mat-form-field class="form-field">
+              <mat-label>Email</mat-label>
+              <input matInput [formControl]="email">
+            </mat-form-field>
+          
+          
+            <mat-form-field class="form-field">
+              <mat-label>Password</mat-label>
+              <input matInput type="password" [formControl]="password">
+            </mat-form-field>
+          
+          <div class="otherActions">
+            <span><a href="#">Forgot password?</a></span>
+            <span><a  (click)="goToCreate()">Create acount</a></span>
+          </div>
+          
+          <button mat-stroked-button class="btnLogin" (click)="login()"><span>Login</span></button>
+        </mat-card-content>  
+
+        </mat-card>
+      
+    
+  </div>
+</div>

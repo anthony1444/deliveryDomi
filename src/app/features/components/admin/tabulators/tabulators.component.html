@@ -1,0 +1,92 @@
+<!-- <div *ngIf="loading" class="spinner-container">
+  <mat-spinner></mat-spinner>
+</div>
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Selecciona Tabulador, Zona y Barrio</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+
+<app-select-custom
+  label="Tabulador"
+  [options]="tabuladors"
+  (selectionChange)="onTabuladorChange($event)">
+</app-select-custom>
+
+<app-select-custom
+  label="Zona"
+  [options]="zonasDisponibles"
+  [disabled]="zonasDisponibles.length === 0"
+  (selectionChange)="onZonaChange($event)">
+</app-select-custom>
+
+  <div *ngIf="barriosDisponibles.length > 0">
+    <h3>Barrios Disponibles</h3>
+    <mat-list>
+      <mat-list-item *ngFor="let barrio of barriosDisponibles" (click)="onBarrioSelect(barrio)">
+        {{ barrio.Name }} - {{ barrio.Price | currency }}
+        <button mat-icon-button (click)="openEditDialog(barrio)">
+          <mat-icon>edit</mat-icon>
+        </button>
+      </mat-list-item>
+    </mat-list>
+  </div>
+   
+  </mat-card-content>
+</mat-card> -->
+
+<mat-card class="form-container">
+  <mat-card-title>Crear Tabulador</mat-card-title>
+  <form [formGroup]="tabuladorForm" (ngSubmit)="saveTabulador()">
+    
+    <mat-form-field appearance="outline">
+      <mat-label>Nombre del Tabulador</mat-label>
+      <input matInput formControlName="Name" required>
+    </mat-form-field>
+
+    <div formArrayName="Zones">
+      <div *ngFor="let zone of zones.controls; let i = index" [formGroupName]="i">
+        <mat-card class="zone-card">
+          <mat-card-title>
+            Zona {{ i + 1 }}
+            <button mat-icon-button color="warn" (click)="removeZone(i)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </mat-card-title>
+          <mat-form-field appearance="outline">
+            <mat-label>Nombre de la Zona</mat-label>
+            <input matInput formControlName="Name" required>
+          </mat-form-field>
+
+          <div formArrayName="Neiborhood">
+            <div *ngFor="let barrio of getNeiborhoods(i).controls; let j = index" [formGroupName]="j">
+              <mat-card class="barrio-card">
+                <mat-card-title>
+                  Barrio {{ j + 1 }}
+                  <button mat-icon-button color="warn" (click)="removeNeiborhood(i, j)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </mat-card-title>
+                <mat-form-field appearance="outline">
+                  <mat-label>Nombre del Barrio</mat-label>
+                  <input matInput formControlName="Name" required>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Precio</mat-label>
+                  <input matInput type="number" formControlName="Price" required>
+                </mat-form-field>
+              </mat-card>
+            </div>
+          </div>
+
+          <button mat-button color="primary" (click)="addNeiborhood(i)">Añadir Barrio</button>
+        </mat-card>
+      </div>
+    </div>
+
+    <button mat-button color="primary" (click)="addZone()">Añadir Zona</button>
+    <button mat-raised-button color="accent" type="submit" [disabled]="tabuladorForm.invalid">
+      Guardar Tabulador
+    </button>
+  </form>
+</mat-card>

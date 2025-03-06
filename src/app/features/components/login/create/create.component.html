@@ -1,0 +1,52 @@
+<div class="home">
+  <div class="wrapper">
+
+    
+    <mat-card appearance="outlined" class="card">
+      <mat-card-content>
+        <button class="button-custom" mat-button (click)="goToLogin()">Volver</button>
+        <br><br>
+      
+        <!-- Nombre -->
+        <mat-form-field>
+          <mat-label>Nombre</mat-label>
+          <input matInput [formControl]="name">
+        </mat-form-field>
+
+        <!-- Email -->
+        <mat-form-field>
+          <mat-label>Email</mat-label>
+          <input matInput type="email" [formControl]="email">
+        </mat-form-field>
+
+        <!-- Teléfono -->
+        <mat-form-field>
+          <mat-label>Teléfono</mat-label>
+          <input matInput type="tel" [formControl]="phone">
+        </mat-form-field>
+
+        <!-- Dirección -->
+        <!-- <mat-form-field>
+          <mat-label>Dirección</mat-label>
+          <input matInput [formControl]="address">
+        </mat-form-field> -->
+
+        <!-- Contraseña -->
+        <mat-form-field>
+          <mat-label>Contraseña</mat-label>
+          <input matInput type="password" [formControl]="password">
+        </mat-form-field>
+
+        <div class="otherActions">
+          <!-- <span><a href="#">Forgot password?</a></span> -->
+          <span><a href="#">Crear Usuario</a></span>
+        </div>
+
+        <button mat-stroked-button class="btnLogin" (click)="register()"><span>Login</span></button>
+      </mat-card-content>
+
+    </mat-card>
+
+
+  </div>
+</div>

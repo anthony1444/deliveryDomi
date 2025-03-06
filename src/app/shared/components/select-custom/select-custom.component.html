@@ -1,0 +1,11 @@
+<mat-form-field appearance="fill">
+  <mat-label>{{ label }}</mat-label>
+  <mat-select (selectionChange)="onSelectionChange($event)" [disabled]="disabled">
+    <div *ngFor="let option of options"> 
+      <mat-option  [value]="option">
+        {{ option.Name }}
+      </mat-option>
+    </div>
+
+  </mat-select>
+</mat-form-field>

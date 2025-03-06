@@ -1,0 +1,39 @@
+<div class="container">
+  <mat-card class="form-card">
+    <mat-card-title>Crear Orden</mat-card-title>
+    <mat-card-content>
+      <form [formGroup]="orderForm" (ngSubmit)="submitOrder()">
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Nombre de Cliente</mat-label>
+          <input matInput  formControlName="customerName" required>
+        </mat-form-field>
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Dirección de Envío</mat-label>
+          <textarea matInput formControlName="shippingAddress"></textarea>
+        </mat-form-field>
+        <!-- <div class="full-width">
+          <app-select-custom label="Tabulador" [options]="tabuladors" (selectionChange)="onTabuladorChange($event)">
+          </app-select-custom>
+        </div>
+
+        <div class="full-width">
+          <app-select-custom label="Zona" [options]="zonasDisponibles" [disabled]="zonasDisponibles.length === 0"
+            (selectionChange)="onZonaChange($event)">
+          </app-select-custom>
+        </div>
+        <div class="full-width">
+          <app-select-custom label="Barrio" [options]="barriosDisponibles" [disabled]="barriosDisponibles.length === 0 && zonasDisponibles.length === 0"
+            (selectionChange)="onBarrioChange($event)">
+          </app-select-custom> -->
+        <!-- </div> -->
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Monto Total</mat-label>
+          <input matInput type="number" formControlName="totalAmount" required>
+        </mat-form-field>
+        <div class="button-container">
+          <button mat-raised-button color="primary" type="submit">Crear Orden</button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

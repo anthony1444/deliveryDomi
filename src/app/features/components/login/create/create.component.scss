@@ -1,0 +1,59 @@
+.home{    
+  height: 100%;
+  background-color: black;
+  background-image: url('../../../../../assets/logo.png');
+  background-repeat: no-repeat;
+  background-size:contain;
+  background-position: center;
+}
+
+.wrapper{
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.795);  
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}  
+
+.card{
+    width: 25vw;
+    color:white;
+    background-color: transparent;
+    box-shadow: 0 0 2px rgb(255, 255, 255);  
+  }
+  .card a {    
+    color: white;
+    text-decoration: none;
+    font-size: 0.9rem;        
+  }  
+
+  .otherActions{    
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 0 1rem 0;    
+  }
+
+  .sidenav-container{
+    background-color: black;
+  }
+
+  .btnLogin{
+    width: 100%;    
+    background-color: var(--blue-servi-entrega);
+  }
+  .btnLogin span{
+    color: white;
+  }
+
+
+  .form-field{
+    width: 100%;
+    height: 200%;    
+  }
+  .button-custom{
+    color: #fff !important;
+  }
