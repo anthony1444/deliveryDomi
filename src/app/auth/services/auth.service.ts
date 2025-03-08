@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile, User, authState, onAuthStateChanged } from '@angular/fire/auth';
-import { Firestore, collection, doc, docData, getDoc, getDocs, query, setDoc, where } from '@angular/fire/firestore';
+import { Firestore, collection, doc, docData, getDoc, getDocs, query, setDoc, updateDoc, where } from '@angular/fire/firestore';
 import { Observable, of, switchMap } from 'rxjs';
 
 
@@ -49,6 +49,20 @@ private usersPath = 'users'; // Ruta en Firebase
       createdAt: new Date(),
       tokenpush:localStorage.getItem('tokenpush')
     });
+  }
+
+  async updateUser(uid: string, data: Partial<{ name: string; phone: string; typeUser: number; address: string; tokenpush:string }>) {
+    try {
+      // Referencia al documento del usuario en Firestore
+      const userRef = doc(this.firestore, `users/${uid}`);
+  
+      // Actualizar solo los campos proporcionados
+      await updateDoc(userRef, data);
+  
+      console.log("✅ Usuario actualizado correctamente");
+    } catch (error) {
+      console.error("❌ Error al actualizar usuario:", error);
+    }
   }
 
   getUserData() {

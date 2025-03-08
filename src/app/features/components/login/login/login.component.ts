@@ -50,8 +50,13 @@ export class LoginComponent {
       .then(() =>{
         const userData = this.authService.getUserData();
         userData.subscribe(data=>{
+          const dataUser = data as any ;
+          const tokenpush = localStorage.getItem('tokenpush') ?? ''
+          dataUser.tokenpush = tokenpush;
           localStorage.setItem('user', JSON.stringify(data))
-          
+          this.authService.updateUser(dataUser.uid, {
+            tokenpush: tokenpush,
+          });
         })
         setTimeout(() => {
           this.route.navigate([''])
@@ -59,6 +64,8 @@ export class LoginComponent {
       } )
       .catch(error => console.error('❌ Error en login:', error));
   }
+
+  
 
   // register() {
   //   this.authService.register(this.email.value, this.password.value)
