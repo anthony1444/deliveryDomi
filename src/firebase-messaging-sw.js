@@ -1,6 +1,6 @@
-// Importar Firebase
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js';
-import { getMessaging, onBackgroundMessage } from "firebase/messaging";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+import { getMessaging,onBackgroundMessage  } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-messaging-sw.js";
+
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -13,16 +13,24 @@ const firebaseConfig = {
   measurementId: "G-2QLPE6BHRE"
 };
 
-// ✅ Primero inicializar Firebase
+
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
 const messaging = getMessaging(app);
 
-// ✅ Manejar notificaciones cuando la app está en segundo plano
-onBackgroundMessage(messaging, (payload) => {
-  console.log("📩 Notificación en segundo plano:", payload);
 
-  self.registration.showNotification(payload.data.title, {
-    body: payload.data.body,
-    icon: "/assets/icon.png"
-  });
+onBackgroundMessage(messaging, (payload) => {
+  console.log('[firebase-messaging-sw.js] Received background message ', payload);
+  
+  const notificationTitle = payload.notification?.title || 'New Notification';
+  const notificationOptions = {
+    body: payload.notification?.body || 'Background message received',
+    icon: '/firebase-logo.png'
+  };
+
+  self.registration.showNotification(notificationTitle, notificationOptions);
 });
+
+console.log('Firebase Messaging SW registered!');
+// const messaging = getMessaging(app);

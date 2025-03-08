@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { deleteToken, getToken, Messaging, onMessage } from '@angular/fire/messaging';
 import { addDoc, collection, Firestore } from '@angular/fire/firestore';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { AuthService } from '../auth/services/auth.service';
 
 @Injectable({
     providedIn: 'root',
@@ -15,7 +16,7 @@ export class MessagingService {
           })
       );
 
-    constructor(private msg: Messaging,private firestore: Firestore) {
+    constructor(private msg: Messaging,private firestore: Firestore, public authService:AuthService) {
         Notification.requestPermission().then(
             (notificationPermissions: NotificationPermission) => {
                 if (notificationPermissions === "granted") {
@@ -35,11 +36,42 @@ export class MessagingService {
                     serviceWorkerRegistration: serviceWorkerRegistration,
                 }).then((x) => {
                     localStorage.setItem('tokenpush',x)
-                    console.log('my fcm token', x);
+                
+            
                     // This is a good place to then store it on your database for each user
                 });
             });
     }
+     /**
+   * Solicita permisos para recibir notificaciones push.
+   */
+     async requestNotificationPermission(): Promise<boolean> {
+        const permission = Notification.permission;
+      
+        if (permission === 'granted') {
+          console.log('🔔 Notificaciones permitidas');
+          await this.getFCMToken();
+          return true;
+        } else if (permission === 'denied') {
+          console.warn('🚫 Notificaciones bloqueadas. El usuario debe habilitarlas manualmente.');
+          return false;
+        } else {
+          const newPermission = await Notification.requestPermission();
+          return newPermission === 'granted';
+        }
+      }
+
+    private async getFCMToken() {
+        const token = await getToken(this.msg, {
+            vapidKey: `BNQprvrTFTKgkkFiFiOg_H9P4Ry6RxEPvl2EB1hyawKuVwlZ010gNqj2SLWidZGtyeuXD90GlZC0EwdrERPA1UM`,
+        });
+        if (token) {
+          console.log('✅ Token FCM obtenido:', token);
+          localStorage.setItem('tokenpush', token);
+        } else {
+          console.warn('⚠️ No se obtuvo el token FCM.');
+        }
+      }
 
 
     async deleteToken() {
