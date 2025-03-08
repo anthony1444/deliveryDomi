@@ -1,5 +1,5 @@
 // Importar Firebase
-import { initializeApp } from "firebase/app";
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js';
 import { getMessaging, onBackgroundMessage } from "firebase/messaging";
 
 // Configuración de Firebase
