@@ -1,12 +1,8 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js';
+// Importar Firebase
+import { initializeApp } from "firebase/app";
+import { getMessaging, onBackgroundMessage } from "firebase/messaging";
 
-
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCIVYLJIapxu5b7QHU1MXDjrRn47ssk-H0",
   authDomain: "delivery-fffde.firebaseapp.com",
@@ -17,5 +13,16 @@ const firebaseConfig = {
   measurementId: "G-2QLPE6BHRE"
 };
 
-// Initialize Firebase
+// ✅ Primero inicializar Firebase
 const app = initializeApp(firebaseConfig);
+const messaging = getMessaging(app);
+
+// ✅ Manejar notificaciones cuando la app está en segundo plano
+onBackgroundMessage(messaging, (payload) => {
+  console.log("📩 Notificación en segundo plano:", payload);
+
+  self.registration.showNotification(payload.data.title, {
+    body: payload.data.body,
+    icon: "/assets/icon.png"
+  });
+});
