@@ -14,6 +14,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 @Component({
   selector: 'app-admin',
   templateUrl: './admin.component.html',
+  styleUrls:['./admin.component.scss'],
   imports: [
     MatSidenavModule,
     MatToolbarModule,
@@ -29,6 +30,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 export class AdminComponent {
 
   opened = false;
+  isMobile = false;
   navLinks = [
     { path: '/', label: 'Home', data:[1,2,3],  },
     { path: '/order', label: 'Crear Pedido',data:[1,2] },

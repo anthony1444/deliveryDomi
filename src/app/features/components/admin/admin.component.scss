@@ -1,0 +1,57 @@
+/* Container styling */
+.sidenav-container {
+  height: 100vh;
+  width: 100%;
+}
+
+/* Sidenav styling */
+.sidenav {
+  width: 250px;
+}
+
+/* On smaller screens, make sidenav take full width when opened */
+@media (max-width: 768px) {
+  .sidenav {
+    width: 100%;
+  }
+  
+  /* Force sidenav to close on small screens by default */
+  mat-sidenav[mode="side"] {
+    transform: translate3d(-100%, 0, 0);
+  }
+  
+  mat-sidenav[mode="side"].mat-drawer-opened {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Content area styling */
+.content {
+  padding: 16px;
+  height: calc(100% - 64px);
+  overflow-y: auto;
+}
+
+/* Toolbar adjustments */
+mat-toolbar {
+  display: flex;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* Logout button positioning */
+button[mat-icon-button]:last-of-type {
+  position: absolute;
+  top: 8px;
+  right: 16px;
+  z-index: 1001;
+}
+
+/* Media query for adjusting toolbar height on small screens */
+@media (max-width: 599px) {
+  .content {
+    height: calc(100% - 56px);
+  }
+}
