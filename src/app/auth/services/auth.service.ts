@@ -46,7 +46,8 @@ private usersPath = 'users'; // Ruta en Firebase
       phone: phone,
       typeUser: typeUser, 
       address:'',
-      createdAt: new Date()
+      createdAt: new Date(),
+      tokenpush:localStorage.getItem('tokenpush')
     });
   }
 
