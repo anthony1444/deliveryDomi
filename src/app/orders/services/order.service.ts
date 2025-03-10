@@ -3,6 +3,7 @@ import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { first, map, Observable } from 'rxjs';
 import { Order } from '../../features/components/admin/orders/interfaces/Order';
 import { equalTo, orderByChild, query, ref } from 'firebase/database';
+import { HttpClient } from '@angular/common/http';
 
 
 
@@ -12,15 +13,28 @@ import { equalTo, orderByChild, query, ref } from 'firebase/database';
 export class OrderService {
   private ordersPath = '/orders';
 
-  constructor(private db: AngularFireDatabase) {}
+  constructor(private db: AngularFireDatabase, public http:HttpClient) {}
 
 
   
   // 📌 Crear Pedido
   createOrder(order: Order): void {
+    console.log("ddddas");
+    
     const newOrderRef = this.db.list(this.ordersPath).push(order); // Genera un ID único
     if (newOrderRef.key) {
+      console.log("ddddas");
       this.db.object(`${this.ordersPath}/${newOrderRef.key}`).update({ id: newOrderRef.key }); // Agregar el ID al objeto
+      const msgOrderNew = {
+        titulo:'Nuevo Pedido',
+        mensaje:'Se ha agregado un nuevo pedido'
+      }
+      this.http.post('https://vercel-nodejs-umber.vercel.app/api/enviarNotificacionMasiva',msgOrderNew).subscribe({
+        next:(data)=>{
+          console.log(data);
+          
+        }
+      })
     }
   }
 
