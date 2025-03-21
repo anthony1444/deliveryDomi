@@ -1,4 +1,4 @@
-/* You can add global styles to this file, and also import other style files */
+// /* You can add global styles to this file, and also import other style files */
 @use '@angular/material' as mat;
 
 
@@ -10,19 +10,18 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
-.mat-drawer-container {
-  position: relative;
-  z-index: 1;
-  color: var(--mat-sidenav-content-text-color);
-  background-color: var(--mat-sidenav-content-background-color);
-  box-sizing: border-box;
-  -webkit-overflow-scrolling: touch;
-  display: block;
-  overflow: hidden;
-  min-width: 100vh;
-}
+// .mat-drawer-container {
+//   position: relative;
+//   z-index: 1;
+//   color: var(--mat-sidenav-content-text-color);
+//   background-color: var(--mat-sidenav-content-background-color);
+//   box-sizing: border-box;
+//   -webkit-overflow-scrolling: touch;
+//   display: block;
+//   overflow: hidden;
+//   min-width: 100vh;
+// }
 .mat-sidenav-content{
-  min-width: 100vh;
   min-height: 100vh;
   max-height: 100vh;
 

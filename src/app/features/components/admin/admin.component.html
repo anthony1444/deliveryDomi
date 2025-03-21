@@ -1,29 +1,38 @@
 <mat-sidenav-container class="sidenav-container">
   <mat-sidenav #sidenav [mode]="isMobile ? 'over' : 'side'" [(opened)]="opened" class="sidenav">
+
     <mat-nav-list>
-      <div *ngFor="let link of navLinks">
-        @if(validatePermisions(link)){
+      <ng-container *ngFor="let link of navLinks">
+        <ng-container *ngIf="validatePermisions(link)">
           <a 
-            mat-list-item
+            mat-list-item 
             (click)="onNavItemClick(sidenav, link.path)"
           >
             {{ link.label }}
           </a>
-        }
-      </div>
+        </ng-container>
+      </ng-container>
     </mat-nav-list>
   </mat-sidenav>
-  
+
   <mat-sidenav-content>
     <mat-toolbar color="primary">
-      <button mat-icon-button (click)="sidenav.toggle()">
+      <button 
+        mat-icon-button 
+        (click)="sidenav.toggle()" 
+        *ngIf="isMobile"
+      >
         <mat-icon>menu</mat-icon>
       </button>
-      <button mat-icon-button (click)="logOut()" aria-label="Cerrar sesión">
+      <button 
+        mat-icon-button 
+        (click)="logOut()" 
+        aria-label="Cerrar sesión"
+      >
         <mat-icon>exit_to_app</mat-icon>
       </button>
     </mat-toolbar>
-    
+
     <div class="content">
       <router-outlet></router-outlet>
     </div>
