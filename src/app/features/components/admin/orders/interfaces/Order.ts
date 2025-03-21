@@ -11,4 +11,6 @@ export interface Order {
     customerName?:string;
     idNeiborhood?:number
     iduser?:number
+    zoneid:number;
+    tabulatorid:number;
 }

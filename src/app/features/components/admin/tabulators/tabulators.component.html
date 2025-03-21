@@ -35,6 +35,9 @@
   </mat-card-content>
 </mat-card> -->
 
+<textarea [(ngModel)]="jsonInput" placeholder="Pega aquí el JSON del tabulador"></textarea>
+<button (click)="loadFromJson()">Cargar JSON</button>
+
 <mat-card class="form-container">
   <mat-card-title>Crear Tabulador</mat-card-title>
   <form [formGroup]="tabuladorForm" (ngSubmit)="saveTabulador()">

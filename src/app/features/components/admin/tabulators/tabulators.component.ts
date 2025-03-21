@@ -66,6 +66,8 @@ export class TabulatorsComponent {
   barriosDisponibles: Barrio[] = [];
   selectedBarrio?: Barrio;
   loading: boolean = true;  // Variable para mostrar el spinner
+  jsonInput: string = '';
+
 
 
   // private tabuladoresUrl = `${environment.apiUrl}tabulators`;
@@ -79,6 +81,7 @@ export class TabulatorsComponent {
     console.log("asdas");
     
     this.tabuladorForm = this.fb.group({
+      id:[0,Validators.required],
       Name: ['', Validators.required],
       Zones: this.fb.array([])
     });
@@ -90,6 +93,7 @@ export class TabulatorsComponent {
 
   addZone() {
     this.zones.push(this.fb.group({
+      id:[0,Validators.required],
       Name: ['', Validators.required],
       Neiborhood: this.fb.array([])
     }));
@@ -105,6 +109,7 @@ export class TabulatorsComponent {
 
   addNeiborhood(zoneIndex: number) {
     this.getNeiborhoods(zoneIndex).push(this.fb.group({
+      id:[0,Validators.required],
       Name: ['', Validators.required],
       Price: [0, Validators.required]
     }));
@@ -127,6 +132,50 @@ export class TabulatorsComponent {
       alert('Error al guardar el tabulado');
 
      
+    }
+  }
+
+  loadFromJson() {
+    try {
+      const parsedData = JSON.parse(this.jsonInput);
+  
+      if (!parsedData || !Array.isArray(parsedData.Zones)) {
+        alert('El formato del JSON no es válido');
+        return;
+      }
+  
+      this.tabuladorForm.patchValue({
+        id: parsedData.id || 0,
+        Name: parsedData.Name || '',
+      });
+  
+      // Limpiar y llenar zonas
+      this.zones.clear();
+      parsedData.Zones.forEach((zone: any) => {
+        const zoneGroup = this.fb.group({
+          id: [zone.id, Validators.required],
+          Name: [zone.Name, Validators.required],
+          Neiborhood: this.fb.array([]),
+        });
+  
+        // Llenar barrios de la zona
+        if (Array.isArray(zone.Neiborhood)) {
+          const neiborhoodArray = zoneGroup.get('Neiborhood') as FormArray;
+          zone.Neiborhood.forEach((barrio: any) => {
+            neiborhoodArray.push(this.fb.group({
+              id: [barrio.id, Validators.required],
+              Name: [barrio.Name, Validators.required],
+              Price: [barrio.Price, Validators.required]
+            }));
+          });
+        }
+  
+        this.zones.push(zoneGroup);
+      });
+  
+      alert('Datos cargados desde el JSON');
+    } catch (error) {
+      alert('Error al procesar el JSON');
     }
   }
 }
