@@ -17,10 +17,11 @@
 
   <mat-sidenav-content>
     <mat-toolbar color="primary">
-      <button 
+      <div class="nav-buttons">
+        <button 
         mat-icon-button 
         (click)="sidenav.toggle()" 
-        *ngIf="isMobile"
+        
       >
         <mat-icon>menu</mat-icon>
       </button>
@@ -31,6 +32,8 @@
       >
         <mat-icon>exit_to_app</mat-icon>
       </button>
+      </div>
+   
     </mat-toolbar>
 
     <div class="content">

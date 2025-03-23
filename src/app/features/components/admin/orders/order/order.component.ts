@@ -51,6 +51,7 @@ interface Tabulador {
         FormsModule,
         MatInputModule,
         MatCardModule,
+        MatButtonModule,
         SelectCustomComponent
     ],
     standalone:true,
@@ -162,7 +163,7 @@ export class OrderComponent {
         createdAt:  dateString.toISOString(),
         updatedAt:  dateString.toISOString(),
         customerName: 'test',
-        delivererId: 0,
+        delivererId: '',
         iduser:1,
         idNeiborhood:this.orderForm.get('idNeiborhood')?.value,
         zoneid:this.orderForm.get('zoneid')?.value,

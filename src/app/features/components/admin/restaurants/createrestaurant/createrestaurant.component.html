@@ -1,0 +1,54 @@
+<div class="home">
+  <div class="wrapper">
+    <mat-card appearance="outlined" class="card">
+      <mat-card-header>
+        <mat-card-title>Crear Usuario</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        
+        <div class="form-container">
+          <!-- Nombre -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nombre</mat-label>
+            <input matInput [formControl]="name">
+          </mat-form-field>
+  
+          <!-- Email -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" [formControl]="email">
+          </mat-form-field>
+  
+          <!-- Teléfono -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Teléfono</mat-label>
+            <input matInput type="tel" [formControl]="phone">
+          </mat-form-field>
+  
+          <!-- Contraseña -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Contraseña</mat-label>
+            <input matInput type="password" [formControl]="password">
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Tabulador</mat-label>
+          <mat-select formControlName="tabulatorid" (selectionChange)="seleccionarTabulador($event.value)">
+            <mat-option *ngFor="let tabulador of tabuladores " [value]="tabulador.id">
+              {{ tabulador.Name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+
+        <div class="button-group">
+          <button mat-stroked-button color="primary" (click)="registerUser()">
+            <mat-icon>person_add</mat-icon> Crear Usuario
+          </button>
+       
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

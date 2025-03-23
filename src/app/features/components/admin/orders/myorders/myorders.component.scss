@@ -1,0 +1,35 @@
+.order-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+  }
+  
+  .order-item {
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .order-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .order-card:hover {
+    transform: scale(1.03);
+  }
+  
+  mat-card-content p {
+    font-size: 14px;
+    margin: 4px 0;
+  }
+  
+  mat-card-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+  

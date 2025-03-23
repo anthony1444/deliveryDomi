@@ -36,7 +36,9 @@ export class AdminComponent implements OnInit {
     { path: '/', label: 'Home', data: [1, 2, 3] },
     { path: '/order', label: 'Crear Pedido', data: [1, 2] },
     { path: '/orders', label: 'Pedidos', data: [1, 3] },
+    { path: '/myorders', label: 'Mis Pedidos', data: [1, 3] },
     { path: '/tabulators', label: 'Tabuladores', data: [1] },
+    { path: '/createrestaurant', label: 'Crear Restaurantes', data: [1] },
   ];
 
   constructor(public router: Router, public authService: AuthService) {}

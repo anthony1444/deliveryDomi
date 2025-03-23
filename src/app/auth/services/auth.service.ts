@@ -51,6 +51,27 @@ private usersPath = 'users'; // Ruta en Firebase
     });
   }
 
+  async registerUserTypeRestaurant(email: string, password: string, name: string, phone: string, typeUser:number, tabulatorid:number) {
+    const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
+    const user = userCredential.user;
+
+    // ✅ Actualizar nombre en Firebase Auth
+    await updateProfile(user, { displayName: name });
+
+    // ✅ Guardar perfil con más datos en Firestore
+    return setDoc(doc(this.firestore, `users/${user.uid}`), {
+      uid: user.uid,
+      email: user.email,
+      name: name,
+      phone: phone,
+      typeUser: typeUser, 
+      address:'',
+      tabulatorid:tabulatorid,
+      createdAt: new Date(),
+      tokenpush:localStorage.getItem('tokenpush')
+    });
+  }
+
   async updateUser(uid: string, data: Partial<{ name: string; phone: string; typeUser: number; address: string; tokenpush:string }>) {
     try {
       // Referencia al documento del usuario en Firestore

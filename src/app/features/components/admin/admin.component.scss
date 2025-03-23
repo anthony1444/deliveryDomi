@@ -28,3 +28,8 @@ mat-toolbar {
     width: 90%; /* Ocupa casi todo el ancho en móviles */
   }
 }
+.nav-buttons{
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}

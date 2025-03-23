@@ -10,10 +10,12 @@
         <mat-card-content>
           <p><strong>Dirección:</strong> {{ order.shippingAddress }}</p>
           <p><strong>Total:</strong> ${{ order.totalAmount }}</p>
-          <p><strong>Entregador ID:</strong> {{ order.delivererId }}</p>
+          <p><strong>Entregador:</strong> {{ userCurrent.name }} </p>
         </mat-card-content>
-        <button mat-button color="primary" (click)="acceptOrder(order)">
-          Aceptar Orden
+
+        <!-- Mostrar el botón solo si el estado es 2 (En camino) -->
+        <button *ngIf="order.status === 2" mat-button color="primary" (click)="completeOrder(order)">
+          Finalizar Pedido
         </button>
 
       </mat-card>

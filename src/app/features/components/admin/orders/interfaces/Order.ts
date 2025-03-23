@@ -7,7 +7,7 @@ export interface Order {
     shippingAddress?: string;
     createdAt?: string;
     updatedAt?: string;
-    delivererId?: number;
+    delivererId?: string;
     customerName?:string;
     idNeiborhood?:number
     iduser?:number
