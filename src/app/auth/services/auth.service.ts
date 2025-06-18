@@ -89,9 +89,13 @@ private usersPath = 'users'; // Ruta en Firebase
   getUserData() {
     return authState(this.auth).pipe(
       switchMap(async user => {  
+        console.log(user);
+        
         if (user) {
           const userDocRef = doc(this.firestore, `users/${user.uid}`);
           const docSnap = await getDoc(userDocRef);
+          console.log(docSnap.data());
+          
           return  docSnap.data();
         }
         return of(null);
@@ -108,8 +112,22 @@ private usersPath = 'users'; // Ruta en Firebase
 
   // 📌 Verifica si el usuario está autenticado
   isLoggedIn(): boolean {
-    return JSON.parse(localStorage.getItem('user') as any) !== null;
-  } 
+    const user = localStorage.getItem('user');
+    console.log(user);
+    
+    // Check if the user data is valid before parsing it
+    if (user) {
+      try {
+        return JSON.parse(user) ?? false;
+      } catch (e) {
+        console.error('Error parsing JSON:', e);
+        return false;
+      }
+    }
+    
+    return false; // Return false if no user data exists
+  }
+  
 
   // 📌 Cerrar sesión
   logout() {
