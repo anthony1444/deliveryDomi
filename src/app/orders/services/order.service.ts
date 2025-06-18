@@ -27,7 +27,7 @@ export class OrderService {
       this.db.object(`${this.ordersPath}/${newOrderRef.key}`).update({ id: newOrderRef.key }); // Agregar el ID al objeto
       const msgOrderNew = {
         titulo:'Nuevo Pedido',
-        mensaje:'Se ha agregado un nuevo pedido'
+        mensaje:' agregado un nuevo pedido'
       }
       this.http.post('https://vercel-nodejs-umber.vercel.app/api/enviarNotificacionMasiva',msgOrderNew).subscribe({
         next:(data)=>{
