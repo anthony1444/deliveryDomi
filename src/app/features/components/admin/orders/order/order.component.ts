@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { ModalComponent } from './modal/modal.component'; // Importar el modal
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Order } from '../interfaces/Order';
@@ -52,7 +52,8 @@ interface Tabulador {
         MatInputModule,
         MatCardModule,
         MatButtonModule,
-        SelectCustomComponent
+        SelectCustomComponent,
+        CurrencyPipe
     ],
     standalone:true,
     styleUrl: './order.component.scss'
