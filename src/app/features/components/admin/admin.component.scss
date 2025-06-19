@@ -1,35 +1,103 @@
 /* Contenedor principal */
 .content {
+  padding: 20px;
+  background-color: #f4f7fa;
+  min-height: calc(100vh - 64px); /* Full height minus toolbar */
+}
+
+/* Sidenav container */
+.sidenav-container {
+  height: 100%;
+}
+
+/* Sidenav */
+.sidenav {
+  width: 250px;
+  background-color: #ffffff;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  border-right: none;
+}
+
+.logo-container {
+  padding: 20px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+}
+
+.logo-image {
+  max-width: 100px;
+  height: auto;
+}
+
+mat-nav-list a[mat-list-item] {
+  color: #333;
+  transition: background-color 0.3s, color 0.3s;
+  border-left: 5px solid transparent;
+  margin: 5px 10px;
+  border-radius: 5px;
   display: flex;
-  flex-direction: column;
-  align-items: center; /* Centra las tarjetas */
-  padding: 16px;
+  align-items: center;
 }
 
-/* Tarjetas */
-.card {
-  width: 100%;
-  max-width: 400px; /* Controla el ancho en pantallas grandes */
-  background: #fff;
-  padding: 16px;
-  border-radius: 12px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  margin-bottom: 12px; /* Reduce la separación entre tarjetas */
+mat-nav-list a[mat-list-item] mat-icon {
+  margin-right: 15px;
+  color: #6c757d;
+  transition: color 0.3s;
 }
 
-/* Mejoras en el toolbar */
+mat-nav-list a[mat-list-item]:hover,
+mat-nav-list a[mat-list-item].active {
+  background-color: #e6f2ff;
+  color: #007bff;
+}
+
+mat-nav-list a[mat-list-item]:hover mat-icon,
+mat-nav-list a[mat-list-item].active mat-icon {
+  color: #007bff;
+}
+
+mat-nav-list a[mat-list-item].active {
+  border-left-color: #007bff;
+}
+
+/* Toolbar */
 mat-toolbar {
-  min-height: 56px; /* Ajuste para móviles */
+  background-color: var(--blue-servi-entrega);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 2;
+  min-height: 64px;
 }
 
-/* Media query para pantallas más pequeñas */
-@media (max-width: 768px) {
-  .card {
-    width: 90%; /* Ocupa casi todo el ancho en móviles */
-  }
-}
 .nav-buttons{
   display: flex;
   justify-content: space-between;
   width: 100%;
+  align-items: center;
+}
+
+.user-name {
+  margin-right: 10px;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+/* Media query para pantallas más pequeñas */
+@media (max-width: 768px) {
+  .sidenav {
+    width: 230px;
+  }
+  mat-toolbar {
+    min-height: 56px;
+  }
+  .content {
+     min-height: calc(100vh - 56px);
+  }
+  .user-name {
+    display: none;
+  }
 }
