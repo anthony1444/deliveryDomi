@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../../../auth/services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -10,6 +10,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { collection, Firestore, getDocs } from '@angular/fire/firestore';
 import { MatSelectModule } from '@angular/material/select';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { ConfirmDialogComponent } from '../../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   imports: [
@@ -20,72 +23,107 @@ import { MatSelectModule } from '@angular/material/select';
     MatFormFieldModule,
     MatCardModule,
     MatIconModule,
-    MatSelectModule
-],
-standalone:true,
-providers: [AuthService],
+    MatSelectModule,
+    MatDialogModule,
+    MatSnackBarModule
+  ],
+  standalone: true,
+  providers: [AuthService],
   selector: 'app-createrestaurant',
   templateUrl: './createrestaurant.component.html',
-  // styles: [':host{display:contents}'], // Makes component host as if it was not there, can offer less css headaches. Use @HostBinding class approach for easier overrides.
-  // host: { class: 'contents' },
+  styleUrls: ['./createrestaurant.component.scss']
 })
 export class CreaterestaurantComponent {
-  name = new FormControl('');
-  email = new FormControl('');
-  phone = new FormControl('');
-  password = new FormControl('');
-  tabulatorid = new FormControl('');
-  tabuladores?:any[] 
+  restaurantForm: FormGroup;
+  tabuladores?: any[];
   private firestore: Firestore = inject(Firestore);
   tabuladorSeleccionado: any;
   tabulatoridSelected: number = 0;
 
+  constructor(
+    private authService: AuthService, 
+    private router: Router, 
+    private fb: FormBuilder,
+    public dialog: MatDialog,
+    private snackBar: MatSnackBar
+  ) {
+    this.restaurantForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      email: ['', [Validators.required, Validators.email]],
+      phone: ['', [Validators.required, Validators.minLength(7)]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      tabulatorid: ['', Validators.required]
+    });
 
-  constructor(private authService: AuthService, private router: Router) {
-
-    const snapshot =  getDocs(collection(this.firestore, 'tabuladores'));
-    snapshot.then(data=>{
-      const tabuladores = data.docs.map(doc => ({
-        id: doc.id, 
-        ...doc.data()
-      }));
-      this.tabuladores = tabuladores 
-      console.log('Tabuladores:', tabuladores);
-
-    })
+    this.loadTabuladores();
   }
 
-  registerUser() {
-    const name = this.name.value!;
-    const email = this.email.value!;
-    const phone = this.phone.value!;
-    const password = this.password.value!;
-    
-    const typeUser = 2;
+  private loadTabuladores() {
+    const snapshot = getDocs(collection(this.firestore, 'tabuladores'));
+    snapshot.then(data => {
+      const tabuladores = data.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      this.tabuladores = tabuladores;
+      console.log('Tabuladores:', tabuladores);
+    });
+  }
 
-    this.authService.registerUserTypeRestaurant(email, password, name, phone, typeUser,this.tabulatoridSelected)
-      .then(() => {
-        console.log('✅ Usuario creado con éxito');
-        this.goToLogin();
-        this.clearForm();
-      })
-      .catch((error:any) => console.error('❌ Error en la creación de usuario:', error));
+  async registerUser() {
+    if (!this.restaurantForm.valid) {
+      this.snackBar.open('Por favor, completa todos los campos requeridos.', 'Cerrar', { 
+        duration: 3000, 
+        panelClass: 'snackbar-error' 
+      });
+      return;
+    }
+
+    // Diálogo de confirmación
+    const confirm = await this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Confirmar creación',
+        message: '¿Estás seguro de que deseas crear este restaurante?'
+      }
+    }).afterClosed().toPromise();
+
+    if (!confirm) return;
+
+    try {
+      const formValue = this.restaurantForm.value;
+      const typeUser = 2; // Tipo de usuario para restaurante
+
+      await this.authService.registerUserTypeRestaurant(
+        formValue.email, 
+        formValue.password, 
+        formValue.name, 
+        formValue.phone, 
+        typeUser, 
+        this.tabulatoridSelected
+      );
+
+      this.snackBar.open('¡Restaurante creado con éxito!', 'Cerrar', { 
+        duration: 3000, 
+        panelClass: 'snackbar-success' 
+      });
+      
+      this.restaurantForm.reset();
+      this.goToLogin();
+    } catch (error) {
+      console.error('❌ Error en la creación del restaurante:', error);
+      this.snackBar.open('Error al crear el restaurante. Intenta nuevamente.', 'Cerrar', { 
+        duration: 3000, 
+        panelClass: 'snackbar-error' 
+      });
+    }
   }
 
   goToLogin() {
     this.router.navigate(['login']);
   }
 
-  clearForm() {
-    this.name.reset();
-    this.email.reset();
-    this.phone.reset();
-    this.password.reset();
-  }
-
   seleccionarTabulador(idtabulador: number) {
-    
-    this.tabuladorSeleccionado = this.tabuladores?.find(e=> e.id == idtabulador);
+    this.tabuladorSeleccionado = this.tabuladores?.find(e => e.id == idtabulador);
     this.tabulatoridSelected = this.tabuladorSeleccionado.id;
   }
 }

@@ -1,0 +1,91 @@
+/* Contenedor principal */
+.container {
+  display: flex;
+  justify-content: center; /* Centrar horizontalmente */
+  padding: 24px;             /* Espaciado superior e inferior, ajustado para dispositivos pequeños */
+  background-color: #f5f5f5; /* Fondo claro */
+  margin: 0;              /* Elimina márgenes predeterminados */
+}
+
+/* Card que contiene el formulario */
+.form-card {
+  max-width: 600px;
+  width: 100%;
+  padding: 20px;             /* Espaciado interno */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+  border-radius: 8px;        /* Bordes redondeados */
+  background-color: #ffffff; /* Fondo blanco */
+}
+
+mat-card-header {
+  padding-bottom: 16px;
+}
+
+mat-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.5rem;
+  color: #3f51b5;
+}
+
+mat-card-subtitle {
+  font-size: 1rem;
+}
+
+/* Espaciado en los campos del formulario */
+.full-width {
+  width: 100%;
+}
+
+mat-form-field {
+  margin-bottom: 8px;
+}
+
+.mat-icon {
+  color: #6c757d;
+}
+
+/* Contenedor para el botón */
+.button-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+/* Estilo para el botón */
+button[mat-raised-button] {
+  padding: 8px 24px;
+}
+
+button[mat-raised-button] .mat-icon {
+  margin-right: 8px;
+  color: white;
+}
+
+/* Responsividad con media queries */
+@media (max-width: 600px) {
+  .form-card {
+    padding: 16px;           /* Reduce el padding en pantallas pequeñas */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra más ligera */
+  }
+
+  mat-card-title {
+    font-size: 18px;         /* Reduce el tamaño del título */
+  }
+
+  button {
+    font-size: 12px;         /* Ajusta el tamaño del botón */
+  }
+}
+
+/* Estilos para los snackbars */
+::ng-deep .snackbar-success {
+  background-color: #4caf50;
+  color: white;
+}
+
+::ng-deep .snackbar-error {
+  background-color: #f44336;
+  color: white;
+} 

@@ -1,7 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { ModalComponent } from './modal/modal.component'; // Importar el modal
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -17,6 +18,7 @@ import { SelectCustomComponent } from '../../../../../shared/components/select-c
 import { OrderService } from '../../../../../orders/services/order.service';
 import { collection, DocumentData, Firestore, getDocs, query } from '@angular/fire/firestore';
 import { collectionData } from '@angular/fire/firestore';
+import { ConfirmDialogComponent } from './../../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 
 interface Barrio {
@@ -53,7 +55,9 @@ interface Tabulador {
         MatCardModule,
         MatButtonModule,
         SelectCustomComponent,
-        CurrencyPipe
+        CurrencyPipe,
+        MatDialogModule,
+        MatSnackBarModule
     ],
     standalone:true,
     styleUrl: './order.component.scss'
@@ -89,7 +93,7 @@ export class OrderComponent {
 
 
 
-  constructor(private fb: FormBuilder, private orderService: OrderService, public http: HttpClient) {
+  constructor(private fb: FormBuilder, private orderService: OrderService, public http: HttpClient, public dialog: MatDialog, private snackBar: MatSnackBar) {
     const snapshot =  getDocs(collection(this.firestore, 'tabuladores'));
     snapshot.then(data=>{
       const tabuladores = data.docs.map(doc => ({
@@ -148,13 +152,24 @@ export class OrderComponent {
   //   });
   // }
 
-  submitOrder() {
-  
-    
-    if (this.orderForm.valid) {
-      const dateString = new Date();
-      console.log(dateString.getTime());
+  async submitOrder() {
+    if (!this.orderForm.valid) {
+      alert('Por favor, completa los campos requeridos.');
+      return;
+    }
 
+    // Diálogo de confirmación
+    const confirm = await this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Confirmar creación',
+        message: '¿Estás seguro de que deseas crear esta orden?'
+      }
+    }).afterClosed().toPromise();
+
+    if (!confirm) return;
+
+    try {
+      const dateString = new Date();
       const order: Order = {
         orderDate:  dateString.toISOString(),
         shippedDate:   dateString.toISOString(),
@@ -169,14 +184,12 @@ export class OrderComponent {
         idNeiborhood:this.orderForm.get('idNeiborhood')?.value,
         zoneid:this.orderForm.get('zoneid')?.value,
         tabulatorid:this.orderForm.get('tabulatorid')?.value,
-
       };
-      this.orderService.createOrder(order);
-
-
-      
-    } else {
-      alert('Por favor, completa los campos requeridos.');
+      await this.orderService.createOrder(order);
+      this.snackBar.open('¡Orden creada con éxito!', 'Cerrar', { duration: 3000, panelClass: 'snackbar-success' });
+      this.orderForm.reset();
+    } catch (error) {
+      this.snackBar.open('Error al crear la orden. Intenta nuevamente.', 'Cerrar', { duration: 3000, panelClass: 'snackbar-error' });
     }
   }
   // onTabuladorChange(event: any) {

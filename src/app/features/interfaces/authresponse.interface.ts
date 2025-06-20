@@ -11,6 +11,7 @@ export interface AuthResponse {
     lastName: string;
     name:string;
     email: string;
+    idRol:number;
     username: string;
     password: string | null;
     createdAt: string;

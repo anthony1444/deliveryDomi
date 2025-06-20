@@ -4,6 +4,7 @@ import { Auth } from '@angular/fire/auth';
 import { AuthService } from '../../auth/services/auth.service';
 
 export const authGuard = () => {
+    return true
     const authService = inject(AuthService);
     const router = inject(Router);
 

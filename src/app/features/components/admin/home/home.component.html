@@ -4,20 +4,26 @@
     <p>Desde aquí puedes acceder a las principales funciones del sistema. Utiliza las tarjetas a continuación para una navegación rápida.</p>
   </div>
 
-  <div class="features-grid">
-    <mat-card *ngFor="let feature of features" class="feature-card" (click)="navigateTo(feature.route)">
-      <mat-card-header>
-        <div mat-card-avatar class="feature-icon-container">
-          <mat-icon class="feature-icon">{{ feature.icon }}</mat-icon>
-        </div>
-        <mat-card-title>{{ feature.title }}</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <p>{{ feature.description }}</p>
-      </mat-card-content>
-      <mat-card-actions>
-        <button mat-button color="primary">ACCEDER</button>
-      </mat-card-actions>
-    </mat-card>
+  <div class="features-grid"  >
+    <div *ngFor="let feature of features" >
+
+      <div *ngIf="validatePermisions(feature)" >
+        <mat-card   class="feature-card" (click)="navigateTo(feature.route)">
+          <mat-card-header>
+            <div mat-card-avatar class="feature-icon-container">
+              <mat-icon class="feature-icon">{{ feature.icon }}</mat-icon>
+            </div>
+            <mat-card-title>{{ feature.title }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p>{{ feature.description }}</p>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-button color="primary">ACCEDER</button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+
+  </div>
   </div>
 </div>

@@ -24,12 +24,15 @@
 }
 
 .features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 20px;
+  justify-content: center;
 }
 
 .feature-card {
+  flex: 0 1 280px;
+  max-width: 280px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
 }
@@ -75,5 +78,10 @@ mat-card-actions {
 @media (max-width: 768px) {
   .welcome-banner h1 {
     font-size: 2rem;
+  }
+  
+  .feature-card {
+    flex: 0 1 100%;
+    max-width: 100%;
   }
 } 

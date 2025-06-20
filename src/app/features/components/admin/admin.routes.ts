@@ -8,7 +8,8 @@ export const routes: Routes = [
         { path: 'createrestaurant', loadComponent: ()=> import('./restaurants/createrestaurant/createrestaurant.component').then(c => c.CreaterestaurantComponent), data:[1],canActivate:[permisionsGuard]},
         { path: 'orders', loadComponent: ()=> import('./orders/orders/orders.component').then(c => c.OrdersComponent),data:[1,2,3]  ,canActivate:[permisionsGuard]},
         { path: 'myorders', loadComponent: ()=> import('./orders/myorders/myorders.component').then(c => c.MyOrdersComponent),data:[1,2,3]  ,canActivate:[permisionsGuard]},
-        { path: 'tabulators',loadComponent: ()=> import('./tabulators/tabulators.component').then(c=>c.TabulatorsComponent),data:[1,2,3]  ,canActivate:[permisionsGuard]},
+        { path: 'tabulators',loadComponent: ()=> import('./tabulators/tabulators-list/tabulators-list.component').then(c=>c.TabulatorsListComponent),data:[1,2,3]  ,canActivate:[permisionsGuard]},
+        { path: 'createtabulators',loadComponent: ()=> import('./tabulators/createtabulators/createtabulators.component').then(c=>c.CreateTabulatorsComponent),data:[1,2,3]  ,canActivate:[permisionsGuard]},
         { path: '',loadComponent: ()=> import('./home/home.component').then(c=>c.HomeComponent) ,data:[1,2,3] ,canActivate:[permisionsGuard]},
        
 

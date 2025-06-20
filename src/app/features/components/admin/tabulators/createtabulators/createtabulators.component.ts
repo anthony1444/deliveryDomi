@@ -13,13 +13,13 @@ import { catchError, Observable, throwError } from 'rxjs';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ModalFormNeiborhoodComponent } from '../../../../modal-form-neiborhood/modal-form-neiborhood.component';
-import { SelectCustomComponent } from '../../../../shared/components/select-custom/select-custom.component';
+import { ModalFormNeiborhoodComponent } from '../../../../../modal-form-neiborhood/modal-form-neiborhood.component';
+import { SelectCustomComponent } from '../../../../../shared/components/select-custom/select-custom.component';
 import { addDoc, collection, Firestore } from '@angular/fire/firestore';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogComponent } from '../../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 // barrio.interface.ts
 export interface Barrio {
@@ -45,7 +45,7 @@ export interface Tabulador {
 }
 
 @Component({
-    selector: 'app-root',
+    selector: 'app-createtabulators',
     imports: [
         FormsModule, CommonModule,
         MatGridListModule, MatFormFieldModule,
@@ -62,10 +62,10 @@ export interface Tabulador {
         MatTooltipModule
     ],
     standalone: true,
-    templateUrl: './tabulators.component.html',
-    styleUrls: ['./tabulators.component.scss']
+    templateUrl: './createtabulators.component.html',
+    styleUrls: ['./createtabulators.component.scss']
 })
-export class TabulatorsComponent {
+export class CreateTabulatorsComponent {
   private firestore = inject(Firestore);
   tabuladors: Tabulador[] = [];
   zonasDisponibles: Zona[] = [];
@@ -209,4 +209,4 @@ export class TabulatorsComponent {
       });
     }
   }
-}
+} 

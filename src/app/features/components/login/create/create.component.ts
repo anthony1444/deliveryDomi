@@ -34,7 +34,7 @@ import { MatIconModule } from '@angular/material/icon';
     standalone:true,
     providers: [AuthService],
     templateUrl: './create.component.html',
-    styleUrl: 'create.component.scss'
+    styleUrl: '/create.component.scss'
 })
 export class CreateComponent {
 

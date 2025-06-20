@@ -33,43 +33,26 @@ export class AdminComponent implements OnInit {
   isMobile = false;
   user: User | null = null;
 
-
   navLinks = [
     { path: '/', label: 'Home', icon: 'home', data: [1, 2, 3] },
     { path: '/order', label: 'Crear Pedido', icon: 'add_shopping_cart', data: [1, 2] },
     { path: '/orders', label: 'Pedidos', icon: 'shopping_cart', data: [1, 3] },
     { path: '/myorders', label: 'Mis Pedidos', icon: 'view_list', data: [1, 3] },
     { path: '/tabulators', label: 'Tabuladores', icon: 'table_chart', data: [1] },
+    { path: '/createtabulators', label: 'Crear Tabuladores', icon: 'add_chart', data: [1] },
     { path: '/createrestaurant', label: 'Crear Restaurantes', icon: 'restaurant_menu', data: [1] },
   ];
 
   constructor(public router: Router, public authService: AuthService) {}
 
   ngOnInit(): void {
-    this.loadUser();
+    this.user = this.authService.getCurrentUser();
     this.checkScreenSize();
-  }
-
-  private loadUser(): void {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        this.user = JSON.parse(storedUser) as User;
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-        this.user = null;
-      }
-    }
   }
 
   @HostListener('window:resize', [])
   checkScreenSize(): void {
     this.isMobile = window.innerWidth < 768;
-  }
-
-  validatePermisions(data: any): boolean {
-    if (!this.user) return false;
-    return data.data.includes(Number(this.user.typeUser));
   }
 
   async logOut(): Promise<void> {

@@ -12,10 +12,15 @@ export const permisionsGuard:CanActivateFn  = (route, state) => {
     console.log(route.data);
     
     const permisions = Object.values(route.data);
+    console.log(permisions);
     console.log(user);
     
     const hasPermision = permisions.find(e=>e==user.typeUser)
     console.log(hasPermision);
+    
+    if (typeof hasPermision === 'undefined') {
+       return false; 
+    }
     
     if (!hasPermision) {
         return false;

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile, User, authState, onAuthStateChanged } from '@angular/fire/auth';
 import { Firestore, collection, doc, docData, getDoc, getDocs, query, setDoc, updateDoc, where } from '@angular/fire/firestore';
 import { Observable, of, switchMap } from 'rxjs';
+import { User as AppUser } from '../../features/interfaces/authresponse.interface';
 
 
 export interface UserInfo {
@@ -118,7 +119,7 @@ private usersPath = 'users'; // Ruta en Firebase
     // Check if the user data is valid before parsing it
     if (user) {
       try {
-        return JSON.parse(user) ?? false;
+        return (JSON.parse(user) == null) ? false : true;
       } catch (e) {
         console.error('Error parsing JSON:', e);
         return false;
@@ -133,5 +134,26 @@ private usersPath = 'users'; // Ruta en Firebase
   logout() {
     localStorage.removeItem('user')
     return this.auth.signOut();
+  }
+
+  getCurrentUser(): AppUser | null {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        return JSON.parse(storedUser) as AppUser;
+      } catch (error) {
+        console.error('Error parsing user data from localStorage:', error);
+        return null;
+      }
+    }
+    return null;
+  }
+
+  validatePermisions(item: { data: number[] }): boolean {
+    const user = this.getCurrentUser();
+    if (!user || !user.typeUser) {
+      return false;
+    }
+    return item.data.includes(Number(user.typeUser));
   }
 }

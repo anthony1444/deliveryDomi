@@ -1,54 +1,60 @@
-<div class="home">
-  <div class="wrapper">
-    <mat-card appearance="outlined" class="card">
-      <mat-card-header>
-        <mat-card-title>Crear Usuario</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        
-        <div class="form-container">
-          <!-- Nombre -->
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Nombre</mat-label>
-            <input matInput [formControl]="name">
-          </mat-form-field>
-  
-          <!-- Email -->
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Email</mat-label>
-            <input matInput type="email" [formControl]="email">
-          </mat-form-field>
-  
-          <!-- Teléfono -->
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Teléfono</mat-label>
-            <input matInput type="tel" [formControl]="phone">
-          </mat-form-field>
-  
-          <!-- Contraseña -->
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Contraseña</mat-label>
-            <input matInput type="password" [formControl]="password">
-          </mat-form-field>
-        </div>
+<div class="container">
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>restaurant</mat-icon>
+        <span>Crear Nuevo Restaurante</span>
+      </mat-card-title>
+      <mat-card-subtitle>Complete los campos para registrar un nuevo restaurante en el sistema</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="restaurantForm" (ngSubmit)="registerUser()">
+        <!-- Nombre del Restaurante -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nombre del Restaurante</mat-label>
+          <mat-icon matPrefix>store</mat-icon>
+          <input matInput formControlName="name" required>
+        </mat-form-field>
 
-        <mat-form-field appearance="fill" class="full-width">
+        <!-- Email -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <mat-icon matPrefix>email</mat-icon>
+          <input matInput type="email" formControlName="email" required>
+        </mat-form-field>
+
+        <!-- Teléfono -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Teléfono</mat-label>
+          <mat-icon matPrefix>phone</mat-icon>
+          <input matInput type="tel" formControlName="phone" required>
+        </mat-form-field>
+
+        <!-- Contraseña -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Contraseña</mat-label>
+          <mat-icon matPrefix>lock</mat-icon>
+          <input matInput type="password" formControlName="password" required>
+        </mat-form-field>
+
+        <!-- Tabulador -->
+        <mat-form-field appearance="outline" class="full-width">
           <mat-label>Tabulador</mat-label>
+          <mat-icon matPrefix>map</mat-icon>
           <mat-select formControlName="tabulatorid" (selectionChange)="seleccionarTabulador($event.value)">
-            <mat-option *ngFor="let tabulador of tabuladores " [value]="tabulador.id">
+            <mat-option *ngFor="let tabulador of tabuladores" [value]="tabulador.id">
               {{ tabulador.Name }}
             </mat-option>
           </mat-select>
         </mat-form-field>
 
-
-        <div class="button-group">
-          <button mat-stroked-button color="primary" (click)="registerUser()">
-            <mat-icon>person_add</mat-icon> Crear Usuario
+        <div class="button-container">
+          <button mat-raised-button color="primary" type="submit" [disabled]="!restaurantForm.valid">
+            <mat-icon>add_business</mat-icon>
+            <span>Crear Restaurante</span>
           </button>
-       
         </div>
-      </mat-card-content>
-    </mat-card>
-  </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
 </div>
