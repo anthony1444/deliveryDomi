@@ -1,49 +1,60 @@
-importScripts("https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js");
-importScripts("https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js");
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+import { getMessaging, onBackgroundMessage } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-messaging-sw.js";
 
-self.addEventListener('install', () => {
-  self.skipWaiting();
-  console.log('✅ Service Worker instalado');
-});
-
-self.addEventListener('activate', event => {
-  event.waitUntil(clients.claim());
-  console.log('✅ Service Worker activado');
-});
-
+// 🔥 Configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCIVYLJIapxu5b7QHU1MXDjrRn47ssk-H0",
   authDomain: "delivery-fffde.firebaseapp.com",
   projectId: "delivery-fffde",
-  storageBucket: "delivery-fffde.appspot.com",
+  storageBucket: "delivery-fffde.firebasestorage.app",
   messagingSenderId: "244577228746",
   appId: "1:244577228746:web:b828118e21a2df1b596133",
   measurementId: "G-2QLPE6BHRE"
 };
 
-firebase.initializeApp(firebaseConfig);
+// 🔥 Inicializar Firebase
+const app = initializeApp(firebaseConfig);
+const messaging = getMessaging(app);
 
-const messaging = firebase.messaging();
+// 🔥 Manejo de notificaciones en segundo plano
+onBackgroundMessage(messaging, (payload) => {
+  console.log('[firebase-messaging-sw.js] Notificación recibida:', payload);
 
-messaging.onBackgroundMessage(payload => {
-  console.log('✅ Mensaje en segundo plano:', payload);
-  const notificationTitle = payload.notification.title;
+  const notificationTitle = payload.notification?.title || 'Nueva Notificación';
   const notificationOptions = {
-    body: payload.notification.body,
-    icon: payload.notification.icon || '/assets/icons/icon-96x96.png',
-    badge: '/assets/icons/icon-72x72.png',
+    body: payload.notification?.body || 'Toca para abrir la app',
+    icon: '/assets/logo.png',
+    badge: '/assets/logo.png',
+    image: payload.notification?.image || '/assets/logo.png',
     vibrate: [200, 100, 200],
-    requireInteraction: true,
-    data: { url: payload.notification?.click_action || '/' }
+    requireInteraction: true, // 🔹 Mantiene la notificación hasta que el usuario interactúe
+    data: { url: payload.notification?.click_action || '/' } // 🔹 Asegura que haya un destino
   };
 
-  return self.registration.showNotification(notificationTitle, notificationOptions);
+  self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
-  const urlToOpen = event.notification.data.url || '/';
+// 🔥 Hacer que toda la notificación abra la app
+self.addEventListener('notificationclick', (event) => {
+  console.log('[firebase-messaging-sw.js] Notificación clickeada:', event);
+
+  event.notification.close(); // 🔹 Cierra la notificación al hacer clic
+
   event.waitUntil(
-    clients.openWindow(urlToOpen)
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      let urlDestino = event.notification.data.url || '/'; // 🔹 URL destino
+
+      // 🔍 Si la PWA ya está abierta, enfocarla
+      for (const client of clientList) {
+        if ('focus' in client) {
+          console.log("✅ Enfocando ventana existente...");
+          return client.focus();
+        }
+      }
+
+      // 🟢 Si la PWA no está abierta, abrir una nueva ventana
+      console.log("🚀 Abriendo la PWA...");
+      return clients.openWindow(urlDestino);
+    })
   );
 });
