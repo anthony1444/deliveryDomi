@@ -13,4 +13,6 @@ export interface Order {
     iduser?:number
     zoneid:number;
     tabulatorid:number;
+    phone?:string;
+    createdByUserName?:string;
 }

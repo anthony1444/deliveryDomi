@@ -19,8 +19,13 @@ export class MyOrdersComponent {
   orders: Order[] = [];
   userId: string | null = null; // ID del usuario logueado
   userCurrent!: User ;
+  user: User | null = null;
 
   constructor(public orderService: OrderService, private authService: AuthService) {
+    const userJson = localStorage.getItem('user');
+    if (userJson) {
+      this.user = JSON.parse(userJson) as User;
+    }
     this.loadUserOrders(); // Cargar órdenes del usuario logueado
   }
 

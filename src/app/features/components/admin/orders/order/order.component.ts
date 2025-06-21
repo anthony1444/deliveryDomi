@@ -74,6 +74,7 @@ export class OrderComponent {
     shippingAddress: new FormControl(),
     idNeiborhood: new FormControl(),
     customerName:new FormControl(),
+    phone: new FormControl(),
     tabulatorid:new FormControl(),
     zoneid:new FormControl(),
   });
@@ -170,15 +171,24 @@ export class OrderComponent {
 
     try {
       const dateString = new Date();
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      let totalAmount = this.orderForm.get('totalAmount')?.value;
+
+      if (user && user.typeUser === '3') {
+        totalAmount -= 1000;
+      }
+
       const order: Order = {
         orderDate:  dateString.toISOString(),
         shippedDate:   dateString.toISOString(),
-        totalAmount: this.orderForm.get('totalAmount')?.value,
+        totalAmount: totalAmount,
         status: 1,
         shippingAddress: this.orderForm.value.shippingAddress,
+        phone: this.orderForm.value.phone,
         createdAt:  dateString.toISOString(),
         updatedAt:  dateString.toISOString(),
-        customerName: 'test',
+        customerName: this.orderForm.value.customerName,
+        createdByUserName: user.name || user.firstName || 'Usuario',
         delivererId: '',
         iduser:1,
         idNeiborhood:this.orderForm.get('idNeiborhood')?.value,

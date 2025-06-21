@@ -3,16 +3,21 @@
     <li class="order-item">
       <mat-card class="order-card">
         <mat-card-header>
-          <mat-card-title>{{ order.customerName }}</mat-card-title>
+          <mat-card-title>Restaurante: {{ order.createdByUserName }}</mat-card-title>
           <mat-card-subtitle>Estado: {{ getStatusLabel(order.status) }}</mat-card-subtitle>
         </mat-card-header>
 
         <mat-card-content>
+          <p><strong>Cliente:</strong> {{ order.customerName }}</p>
           <p><strong>Dirección:</strong> {{ order.shippingAddress }}</p>
-          <p><strong>Total:</strong> ${{ order.totalAmount }}</p>
-          <p><strong>Entregador ID:</strong> {{ order.delivererId }}</p>
+          <p><strong>Total:</strong> 
+            
+            <span *ngIf="user && user.typeUser == '3'">{{ (order.totalAmount || 0) - 1000 | currency }}</span>
+            <span *ngIf="!user || user.typeUser != '3'">{{ order.totalAmount | currency }}</span>
+          </p>
+          <p *ngIf="order.delivererId"><strong>Domiciliario:</strong> {{ order.delivererId }}</p>
         </mat-card-content>
-        <button mat-button color="primary" (click)="acceptOrder(order)">
+        <button *ngIf="user && user.typeUser == '3'" mat-button color="primary" (click)="acceptOrder(order)">
           Aceptar Orden
         </button>
 
