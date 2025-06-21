@@ -7,7 +7,13 @@ import { User } from '../../features/interfaces/authresponse.interface';
 export const permisionsGuard:CanActivateFn  = (route, state) => {
     console.log("aa");
     const router = inject(Router);
-
+    console.log(localStorage.getItem('user'));
+    if (localStorage.getItem('user') === null) {
+        console.log("ass");
+        localStorage.clear();
+        router.navigate(['/login']);
+       return false; 
+    }
     const user:User =  JSON.parse(localStorage.getItem('user') ?? '') as User;
     console.log(route.data);
     

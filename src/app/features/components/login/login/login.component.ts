@@ -48,28 +48,32 @@ export class LoginComponent {
 
   login() {
     this.authService.login(this.email.value, this.password.value)
-      .then(() =>{
-
-        
-
+      .then(() => {
         const userData = this.authService.getUserData();
-        userData.subscribe(async data=>{
-          
-          const tokenGenerated =   await this.messagingService.obtenerTokenPush();
-          console.log(tokenGenerated);
-          
-          const dataUser = data as any ;
-          const tokenpush = localStorage.getItem('tokenpush') ?? (tokenGenerated ?? '')
-          dataUser.tokenpush = tokenpush;
-          localStorage.setItem('user', JSON.stringify(data))
-          this.authService.updateUser(dataUser.uid, {
-            tokenpush: tokenpush,
+        if (userData) {
+          userData.subscribe(async data => {
+            if (data) {
+              try {
+                const tokenGenerated = await this.messagingService.obtenerTokenPush();
+                const dataUser = data as any;
+                const tokenpush = localStorage.getItem('tokenpush') ?? (tokenGenerated ?? '');
+                dataUser.tokenpush = tokenpush;
+                localStorage.setItem('user', JSON.stringify(dataUser));
+                
+                await this.authService.updateUser(dataUser.uid, {
+                  tokenpush: tokenpush,
+                });
+
+                this.route.navigate(['']);
+              } catch (error) {
+                console.error('❌ Error updating user or getting token:', error);
+              }
+            }
           });
-        })
-        setTimeout(() => {
-          this.route.navigate([''])
-        }, 1000);
-      } )
+        } else {
+            console.error('❌ User data not available after login.');
+        }
+      })
       .catch(error => console.error('❌ Error en login:', error));
   }
 

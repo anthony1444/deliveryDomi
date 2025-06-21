@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { OrderService } from '../../../../../orders/services/order.service';
 import { Order } from '../interfaces/Order';
 import { CommonModule } from '@angular/common';
@@ -18,29 +18,31 @@ import { MatButtonModule } from '@angular/material/button';
 })
 export class OrdersComponent {
   orders: Order[] = [];
+  user: User | null = null;
   userId: string | null = null; // ID del usuario logueado
 
   constructor(public orderService: OrderService, private authService: AuthService, private alertService: AlertService) {
-    const user: User = JSON.parse(localStorage.getItem('user') ?? '') as User;
-    console.log(user.uid);
+    const userJson = localStorage.getItem('user');
+    if (userJson) {
+      this.user = JSON.parse(userJson) as User;
+      this.userId = this.user.uid;
+    }
 
-    this.userId = String(user.uid)
-
-    // this.authService.getCurrentUser().subscribe(user => {
-    //   this.userId = user?.uid || null; // Obtener ID del usuario logueado
-    // });
-    // this.loadOrders(); // Cargar órdenes con estado 'Pendiente'
-    this.loadOrdersByField('status', 1); // Cargar órdenes con estado 'Pendiente'
-
+    this.loadOrdersByField('status', 1);
   }
-
 
   loadOrdersByField<T>(field: keyof Order, value: T) {
-    this.orderService.getOrdersByField(field, value).subscribe(data => {
-      this.orders = data;
-      console.log(`Órdenes filtradas por ${field}:`, this.orders);
+    this.orderService.getOrdersByField(field, value).subscribe({
+      next: (data: any) => {
+        this.orders = data;
+        console.log(`Órdenes filtradas por ${field}:`, this.orders);
+      },
+      error: (err: any) => {
+        console.error(`Error al filtrar órdenes por ${field}:`, err);
+      }
     });
   }
+
   // Cargar pedidos
   loadOrders(): void {
     this.orderService.getOrders().subscribe(data => {
@@ -83,7 +85,6 @@ export class OrdersComponent {
             return;
           }
 
-
           const updatedOrder: Order = {
             ...order,
             delivererId: this.userId,
@@ -91,15 +92,17 @@ export class OrdersComponent {
           };
           console.log(updatedOrder);
 
-          this.orderService.updateOrder(String(order.id), updatedOrder).then(() => {
-            console.log('Orden aceptada:', updatedOrder);
-            this.loadOrdersByField('status', 1); // Recargar órdenes pendientes
-          });
+          this.orderService.updateOrder(String(order.id), updatedOrder)
+            .then(() => {
+              console.log('Orden aceptada:', updatedOrder);
+              this.loadOrdersByField('status', 1); // Recargar órdenes pendientes
+            })
+            .catch(err => {
+              console.error('Error al aceptar la orden:', err);
+            });
         }
-
-      })
+      });
   }
-
 }
 
 
