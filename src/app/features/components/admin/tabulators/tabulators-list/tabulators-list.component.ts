@@ -11,7 +11,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { collection, Firestore, getDocs, deleteDoc, doc } from '@angular/fire/firestore';
+import { collection, Firestore, getDocs, deleteDoc, doc, addDoc } from '@angular/fire/firestore';
 import { ConfirmDialogComponent } from '../../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 interface Tabulador {
@@ -71,10 +71,12 @@ export class TabulatorsListComponent implements OnInit, AfterViewInit {
       const snapshot = await getDocs(tabuladoresRef);
       
       const tabuladores = snapshot.docs.map(doc => ({
-        id: doc.id,
+        docId: doc.id, // ID de documento real
         ...doc.data()
-      })) as Tabulador[];
+      })) as any[];
 
+      console.log();
+      
       this.dataSource.data = tabuladores;
     } catch (error) {
       console.error('Error loading tabuladores:', error);
@@ -105,7 +107,7 @@ export class TabulatorsListComponent implements OnInit, AfterViewInit {
     });
   }
 
-  async deleteTabulador(tabulador: Tabulador): Promise<void> {
+  async deleteTabulador(tabulador: any): Promise<void> {
     const confirm = await this.dialog.open(ConfirmDialogComponent, {
       data: {
         title: 'Confirmar eliminación',
@@ -116,14 +118,13 @@ export class TabulatorsListComponent implements OnInit, AfterViewInit {
     if (!confirm) return;
 
     try {
-      const tabuladorRef = doc(this.firestore, 'tabuladores', tabulador.id);
+      console.log('Eliminando tabulador con docId:', tabulador.docId, typeof tabulador.docId);
+      const tabuladorRef = doc(this.firestore, 'tabuladores', String(tabulador.docId));
       await deleteDoc(tabuladorRef);
-      
       this.snackBar.open('Tabulador eliminado con éxito', 'Cerrar', { 
         duration: 3000, 
         panelClass: 'snackbar-success' 
       });
-      
       this.loadTabulators();
     } catch (error) {
       console.error('Error deleting tabulador:', error);
@@ -131,6 +132,21 @@ export class TabulatorsListComponent implements OnInit, AfterViewInit {
         duration: 3000, 
         panelClass: 'snackbar-error' 
       });
+    }
+  }
+
+  async duplicateTabulador(tabulador: Tabulador): Promise<void> {
+    try {
+      // Clonar el objeto sin el id
+      const { id, ...tabuladorData } = tabulador;
+      // Opcional: puedes modificar el nombre para indicar que es una copia
+      tabuladorData.Name = tabuladorData.Name + ' (Copia)';
+      await addDoc(collection(this.firestore, 'tabuladores'), tabuladorData);
+      this.snackBar.open('Tabulador duplicado con éxito', 'Cerrar', { duration: 3000, panelClass: 'snackbar-success' });
+      this.loadTabulators();
+    } catch (error) {
+      console.error('Error duplicando tabulador:', error);
+      this.snackBar.open('Error al duplicar el tabulador', 'Cerrar', { duration: 3000, panelClass: 'snackbar-error' });
     }
   }
 
