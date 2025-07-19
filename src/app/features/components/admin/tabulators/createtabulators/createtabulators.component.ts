@@ -137,21 +137,15 @@ export class CreateTabulatorsComponent {
     this.getNeiborhoods(zoneIndex).removeAt(barrioIndex);
   }
 
-  async loadTabulador(id: string) {
-    // Obtener todos los tabuladores
-    const tabuladoresRef = collection(this.firestore, 'tabuladores');
-    const snapshot = await getDocs(tabuladoresRef);
-    const tabuladores = snapshot.docs.map(doc => ({
-      docId: doc.id, // ID real de documento
-      ...doc.data()
-    })) as any[];
-
-    console.log(tabuladores);
+  async loadTabulador(docId: string) {
+    // Obtener el documento directamente por su ID real
+    const tabuladorRef = doc(this.firestore, 'tabuladores', docId);
     
-    // Buscar el tabulador cuyo campo 'id' coincida con el valor recibido
-    const tabulador: any = tabuladores.find(t => String(t['id']) === String(id));
-    if (tabulador) {
-      console.log('Tabulador encontrado para editar:', tabulador);
+    const tabuladorSnap = await getDoc(tabuladorRef);
+    console.log(tabuladorSnap.exists());
+    if (tabuladorSnap.exists()) {
+      const tabulador: any = tabuladorSnap.data();
+      // Cargar los datos en el formulario
       this.tabuladorForm.patchValue({
         id: tabulador['id'] || 0,
         Name: tabulador['Name'] || tabulador['name'] || '',
@@ -180,7 +174,7 @@ export class CreateTabulatorsComponent {
       this.tabuladorForm.setControl('Zones', zonesArray);
       this.formReady = true;
       this.snackBar.open('Tabulador cargado para edición', 'Cerrar', { duration: 2000 });
-      this.tabuladorId = tabulador['docId'];
+      this.tabuladorId = docId;
       this.cdr.detectChanges();
     } else {
       this.formReady = false;

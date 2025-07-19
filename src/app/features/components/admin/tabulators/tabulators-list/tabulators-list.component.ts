@@ -16,6 +16,7 @@ import { ConfirmDialogComponent } from '../../../../../shared/components/confirm
 
 interface Tabulador {
   id: string;
+  docId:string;
   Name: string;
   Zones: any[];
   createdAt?: any;
@@ -41,7 +42,7 @@ interface Tabulador {
   ]
 })
 export class TabulatorsListComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['Name', 'Zones', 'Barrios', 'actions'];
+  displayedColumns: string[] = ['docId', 'Name', 'Zones', 'Barrios', 'actions'];
   dataSource: MatTableDataSource<Tabulador> = new MatTableDataSource();
   loading = true;
 
@@ -69,13 +70,17 @@ export class TabulatorsListComponent implements OnInit, AfterViewInit {
       this.loading = true;
       const tabuladoresRef = collection(this.firestore, 'tabuladores');
       const snapshot = await getDocs(tabuladoresRef);
+      console.log(snapshot.docs);
+      
       
       const tabuladores = snapshot.docs.map(doc => ({
-        docId: doc.id, // ID de documento real
+        
+        docId: doc.ref.id, // ID de documento real
+        docName:doc.ref.id,
         ...doc.data()
       })) as any[];
 
-      console.log();
+      console.log(tabuladores);
       
       this.dataSource.data = tabuladores;
     } catch (error) {
@@ -101,9 +106,11 @@ export class TabulatorsListComponent implements OnInit, AfterViewInit {
     }, 0);
   }
 
-  editTabulador(tabulador: Tabulador): void {
+  editTabulador(tabulador: any): void {
+    console.log(tabulador);
+    
     this.router.navigate(['/createtabulators'], { 
-      queryParams: { id: tabulador.id } 
+      queryParams: { id: tabulador.docName } 
     });
   }
 

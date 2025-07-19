@@ -33,6 +33,24 @@
         <td mat-cell *matCellDef="let tabulador"> {{getTotalBarrios(tabulador)}} </td>
       </ng-container>
 
+      <!-- idReal Column -->
+      <ng-container matColumnDef="idReal">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> idReal </th>
+        <td mat-cell *matCellDef="let tabulador"> {{tabulador.idReal}} </td>
+      </ng-container>
+
+      <!-- firestoreId Column -->
+      <ng-container matColumnDef="firestoreId">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> firestoreId </th>
+        <td mat-cell *matCellDef="let tabulador"> {{tabulador.firestoreId}} </td>
+      </ng-container>
+
+      <!-- docId Column -->
+      <ng-container matColumnDef="docId">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> ID </th>
+        <td mat-cell *matCellDef="let tabulador"> {{tabulador.docId}} </td>
+      </ng-container>
+
       <!-- Actions Column -->
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef> Acciones </th>
