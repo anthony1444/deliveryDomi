@@ -58,7 +58,6 @@ self.addEventListener('notificationclick', (event) => {
       // 🔍 Si la PWA ya está abierta, enfocarla
       for (const client of clientList) {
         if ('focus' in client) {
-                      alert('No se pudo reproducir el sonido. Por favor, verifica que tu dispositivo no esté en modo silencio o que el volumen esté activado.');
 
           console.log("✅ Enfocando ventana existente...");
           return client.focus();

@@ -37,20 +37,20 @@ export class AppComponent {
           }).catch(e => {
             console.warn('No se pudo reproducir el sonido:', e);
           });
-            const audio2 = new Audio('assets/notification-sound.mp3');
-          audio2.play().then((val)=>{
-            console.log('🔊 Sonido reproducido correctamente2');
-          }).catch(e => {
-            console.warn('No se pudo reproducir el sonido:', e);
-          });
+          //   const audio2 = new Audio('assets/notification-sound.mp3');
+          // audio2.play().then((val)=>{
+          //   console.log('🔊 Sonido reproducido correctamente2');
+          // }).catch(e => {
+          //   console.warn('No se pudo reproducir el sonido:', e);
+          // });
         if (event.data && event.data.playSound) {
           console.log('🔊 Intentando reproducir sonido...');
-          const audio = new Audio('/assets/notification-sound.mp3');
-          audio.play().then((val)=>{
-            console.log('🔊 Sonido reproducido correctamente3');
-          }).catch(e => {
-            console.warn('No se pudo reproducir el sonido:', e);
-          });
+          // const audio = new Audio('/assets/notification-sound.mp3');
+          // audio.play().then((val)=>{
+          //   console.log('🔊 Sonido reproducido correctamente3');
+          // }).catch(e => {
+          //   console.warn('No se pudo reproducir el sonido:', e);
+          // });
         }
       });
     } else {
