@@ -26,14 +26,29 @@ export class AppComponent {
   }
 
   ngOnInit() {
+
     if ('serviceWorker' in navigator) {
       console.log('✅ Service Worker soportado');
       navigator.serviceWorker.addEventListener('message', (event) => {
         console.log('📩 Mensaje recibido del Service Worker:', event.data);
+          const audio = new Audio('/assets/notification-sound.mp3');
+          audio.play().then((val)=>{
+            console.log('🔊 Sonido reproducido correctamente 1');
+          }).catch(e => {
+            console.warn('No se pudo reproducir el sonido:', e);
+          });
+            const audio2 = new Audio('assets/notification-sound.mp3');
+          audio2.play().then((val)=>{
+            console.log('🔊 Sonido reproducido correctamente2');
+          }).catch(e => {
+            console.warn('No se pudo reproducir el sonido:', e);
+          });
         if (event.data && event.data.playSound) {
           console.log('🔊 Intentando reproducir sonido...');
-          const audio = new Audio('/assets/notificacion.mp3');
-          audio.play().catch(e => {
+          const audio = new Audio('/assets/notification-sound.mp3');
+          audio.play().then((val)=>{
+            console.log('🔊 Sonido reproducido correctamente3');
+          }).catch(e => {
             console.warn('No se pudo reproducir el sonido:', e);
           });
         }
