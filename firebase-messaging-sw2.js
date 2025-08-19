@@ -48,7 +48,17 @@ const messaging = getMessaging(app);
 // 🔥 Manejo de notificaciones en segundo plano
 onBackgroundMessage(messaging, (payload) => {
   console.log('[firebase-messaging-sw.js] Notificación recibida:', payload);
-
+  // Reproducir sonido personalizado (si el navegador lo permite)
+  self.addEventListener('notificationclose', () => {}); // Necesario para evitar advertencias 
+  try {
+    self.clients.matchAll({includeUncontrolled: true, type: 'window'}).then(clients => {
+      for (const client of clients) {
+        client.postMessage({playSound: true});
+      }
+    });
+  } catch (e) {
+    console.warn('No se pudo reproducir sonido:', e);
+  }
   const notificationTitle = payload.notification?.title || 'Nueva Notificación';
   const notificationOptions = {
     body: payload.notification?.body || 'Toca para abrir la app',
@@ -57,7 +67,8 @@ onBackgroundMessage(messaging, (payload) => {
     image: payload.notification?.image || '/assets/logo.png',
     vibrate: [200, 100, 200],
     requireInteraction: true, // 🔹 Mantiene la notificación hasta que el usuario interactúe
-    data: { url: payload.notification?.click_action || '/' } // 🔹 Asegura que haya un destino
+    data: { url: payload.notification?.click_action || '/' }, // 🔹 Asegura que haya un destino,
+    sound: 'default' // 🔹 Sonido personalizado
   };
 
   self.registration.showNotification(notificationTitle, notificationOptions);
