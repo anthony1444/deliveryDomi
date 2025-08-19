@@ -26,6 +26,21 @@ export class AppComponent {
   }
 
   ngOnInit() {
+    if ('serviceWorker' in navigator) {
+      console.log('✅ Service Worker soportado');
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        console.log('📩 Mensaje recibido del Service Worker:', event.data);
+        if (event.data && event.data.playSound) {
+          console.log('🔊 Intentando reproducir sonido...');
+          const audio = new Audio('/assets/notificacion.mp3');
+          audio.play().catch(e => {
+            console.warn('No se pudo reproducir el sonido:', e);
+          });
+        }
+      });
+    } else {
+      console.warn('❌ Service Worker NO soportado');
+    }
     this.checkNotificationPermission();
   }
 

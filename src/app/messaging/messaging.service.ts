@@ -13,6 +13,8 @@ export class MessagingService {
   message$ = new Observable((sub) => onMessage(this.msg, (msg) =>
     sub.next(msg))).pipe(
       tap((msg: any) => {
+                    alert('No se pudo reproducir el sonido. Por favor, verifica que tu dispositivo no esté en modo silencio o que el volumen esté activado.');
+
         console.log("My Firebase Cloud Message", msg);
       })
     );
