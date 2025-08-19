@@ -59,6 +59,7 @@ self.addEventListener('notificationclick', (event) => {
       for (const client of clientList) {
         if ('focus' in client) {
 
+          
           console.log("✅ Enfocando ventana existente...");
           return client.focus();
         }
