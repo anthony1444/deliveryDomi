@@ -1,4 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, AfterViewInit } from '@angular/core';
+import * as L from 'leaflet';
+import '@geoman-io/leaflet-geoman-free';
+import 'leaflet-control-geocoder';
+
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -17,14 +21,21 @@ import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http'
 import { SelectCustomComponent } from '../../../../../shared/components/select-custom/select-custom.component';
 import { OrderService } from '../../../../../orders/services/order.service';
 import { collection, DocumentData, Firestore, getDocs, query } from '@angular/fire/firestore';
-import { collectionData } from '@angular/fire/firestore';
+import { collectionData, onSnapshot } from '@angular/fire/firestore';
 import { ConfirmDialogComponent } from './../../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { debounceTime, distinctUntilChanged, switchMap, catchError, map } from 'rxjs/operators';
+import { of } from 'rxjs';
+import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
+import { point } from '@turf/helpers';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 
 interface Barrio {
   id?:number;
   Name: string;
   Price: number;
+  MapAreaId?: string;
 }
 
 interface Zona {
@@ -57,12 +68,15 @@ interface Tabulador {
         SelectCustomComponent,
         CurrencyPipe,
         MatDialogModule,
-        MatSnackBarModule
+        MatSnackBarModule,
+        MatAutocompleteModule,
+        MatProgressSpinnerModule
     ],
     standalone:true,
     styleUrl: './order.component.scss'
 })
-export class OrderComponent {
+export class OrderComponent implements AfterViewInit {
+
     title = 'firebasetest';
   
     message: any;
@@ -89,8 +103,17 @@ export class OrderComponent {
   tabuladorSeleccionado?: Tabulador;
   zonaSeleccionada?: Zona;
   barrioSeleccionado?: Barrio;
-  // tabuladores$: Observable<any[]>;
-  tabuladores?:any[] 
+  tabuladores?:any[];
+  
+  // Autocompletado y Detección de Áreas
+  filteredAddresses: any[] = [];
+  isSearchingAddress: boolean = false;
+  mapAreas: any[] = [];
+
+  // Mapa
+  map!: L.Map;
+  addressMarker: L.Marker | null = null;
+  drawnLayers: L.Layer[] = [];
 
 
 
@@ -139,6 +162,277 @@ export class OrderComponent {
 
   ngOnInit(): void {
     this.checkUserTabulator();
+    this.loadMapAreas();
+    this.setupAddressAutocomplete();
+  }
+
+  ngAfterViewInit(): void {
+    this.initMap();
+  }
+
+  private initMap(): void {
+    this.map = L.map('order-map').setView([6.2442, -75.5812], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(this.map);
+    
+    // Configurar icono por defecto para evitar errores de assets perdidos
+    const DefaultIcon = L.icon({
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+    L.Marker.prototype.options.icon = DefaultIcon;
+    
+    // A) Añadir Buscador Interno del mapa
+    const geocoderControl = (L.Control as any).geocoder({
+      defaultMarkGeocode: false,
+      placeholder: "Buscar en el mapa...",
+      errorMessage: "No encontrado."
+    })
+    .on('markgeocode', (e: any) => {
+      const latlng = e.geocode.center;
+      const address = e.geocode.name;
+      this.handleMapLocationSelection(latlng.lat, latlng.lng, address);
+    })
+    .addTo(this.map);
+
+    // B) Añadir Reverse Geocoding al hacer clic en el mapa
+    this.map.on('click', (e: any) => {
+      const lat = e.latlng.lat;
+      const lon = e.latlng.lng;
+      
+      this.snackBar.open('Buscando dirección...', '', { duration: 1500 });
+      
+      // Llamada a ArcGIS para Reverse Geocoding
+      const url = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode?location=${lon},${lat}&f=json`;
+      this.http.get<any>(url).subscribe({
+        next: (response) => {
+          if (response && response.address && response.address.Match_addr) {
+            this.handleMapLocationSelection(lat, lon, response.address.Match_addr);
+          } else {
+            this.handleMapLocationSelection(lat, lon, 'Dirección manual en mapa');
+          }
+        },
+        error: () => {
+          this.handleMapLocationSelection(lat, lon, 'Dirección manual en mapa');
+        }
+      });
+    });
+
+    setTimeout(() => {
+      this.map.invalidateSize();
+      if (this.tabuladorSeleccionado) {
+        this.renderTabuladorAreas();
+      }
+    }, 500);
+  }
+
+  private renderTabuladorAreas(): void {
+    if (!this.map || !this.tabuladorSeleccionado) return;
+    
+    this.map.invalidateSize();
+
+    // Limpiar
+    this.drawnLayers.forEach(layer => this.map.removeLayer(layer));
+    this.drawnLayers = [];
+
+    const selectedAreaIds = new Set<string>();
+    const zones = this.tabuladorSeleccionado.Zones || [];
+    zones.forEach((zone: any) => {
+      const neiborhoods = zone.Neiborhood || [];
+      neiborhoods.forEach((barrio: any) => {
+        if (barrio.MapAreaId) {
+          selectedAreaIds.add(barrio.MapAreaId);
+        }
+      });
+    });
+
+    const bounds = L.latLngBounds([]);
+    
+    this.mapAreas.forEach(area => {
+      if (selectedAreaIds.has(area.id) && area.geoJson) {
+        let geoData = typeof area.geoJson === 'string' ? JSON.parse(area.geoJson) : area.geoJson;
+        try {
+          const layerGroup = L.geoJSON(geoData, {
+            style: { color: area.color || '#3f51b5', fillOpacity: 0.2 } // Opacidad menor para pedidos
+          });
+          layerGroup.eachLayer((l: any) => {
+            l.addTo(this.map);
+            this.drawnLayers.push(l);
+            if (l.getBounds) {
+              bounds.extend(l.getBounds());
+            }
+          });
+        } catch (e) {
+          console.error('Error renderizando polígono en orden', e);
+        }
+      }
+    });
+
+    if (bounds.isValid() && this.drawnLayers.length > 0) {
+      this.map.fitBounds(bounds, { padding: [20, 20], maxZoom: 14 });
+    }
+  }
+
+  private loadMapAreas() {
+    const areasCollection = collection(this.firestore, 'zones');
+    onSnapshot(areasCollection, (snapshot) => {
+      this.mapAreas = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      // Si el mapa ya cargó y hay un tabulador seleccionado, dibujamos las áreas
+      if (this.map && this.tabuladorSeleccionado) {
+        this.renderTabuladorAreas();
+      }
+    });
+  }
+
+  private setupAddressAutocomplete() {
+    this.orderForm.get('shippingAddress')?.valueChanges.pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      switchMap(value => {
+        if (!value || typeof value !== 'string' || value.length < 5) {
+          this.filteredAddresses = [];
+          return of([]);
+        }
+        this.isSearchingAddress = true;
+        
+        // Usamos ArcGIS World Geocoding Service. Es el mejor servicio gratuito para direcciones en Latinoamérica.
+        // Entiende perfectamente formatos como "Calle 45 # 23-14" y nombres de barrios sin tener que limpiar los textos.
+        const queryStr = encodeURIComponent(value);
+        const url = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?singleLine=${queryStr}&city=Medellin&region=Antioquia&countryCode=COL&maxLocations=7&f=json`;
+        
+        return this.http.get<any>(url).pipe(
+          map(response => response.candidates || []),
+          catchError(() => of([]))
+        );
+      })
+    ).subscribe(results => {
+      this.isSearchingAddress = false;
+      this.filteredAddresses = results;
+    });
+  }
+
+  onAddressSelected(event: MatAutocompleteSelectedEvent) {
+    const selected = event.option.value; // Este es el candidato de ArcGIS
+    
+    const displayName = this.displayAddress(selected);
+    this.orderForm.get('shippingAddress')?.setValue(displayName, { emitEvent: false });
+    
+    // ArcGIS devuelve location: { x: lon, y: lat }
+    if (selected.location && selected.location.x && selected.location.y) {
+      const lon = selected.location.x;
+      const lat = selected.location.y;
+      
+      this.handleMapLocationSelection(lat, lon, displayName);
+    }
+  }
+
+  private handleMapLocationSelection(lat: number, lon: number, addressText: string) {
+    // 1. Poner Pin
+    if (this.map) {
+      if (this.addressMarker) {
+        this.map.removeLayer(this.addressMarker);
+      }
+      this.addressMarker = L.marker([lat, lon]).addTo(this.map);
+      this.addressMarker.bindPopup(`<b>${addressText}</b>`).openPopup();
+      this.map.setView([lat, lon], 16, { animate: true });
+    }
+
+    // 2. Actualizar texto de dirección en el formulario (sin disparar de nuevo la búsqueda)
+    this.orderForm.get('shippingAddress')?.setValue(addressText, { emitEvent: false });
+
+    // 3. Detectar Área de Mapa y autocompletar barrio
+    this.detectMapAreaFromCoordinates(lat, lon);
+  }
+
+  displayAddress(candidate: any): string {
+    if (!candidate) return '';
+    // ArcGIS devuelve la dirección formateada en 'address'
+    return candidate.address || 'Dirección desconocida';
+  }
+
+  private detectMapAreaFromCoordinates(lat: number, lon: number) {
+    const pt = point([lon, lat]); // Turf usa [longitud, latitud]
+    let detectedAreaId: string | null = null;
+
+    for (const area of this.mapAreas) {
+      if (!area.geoJson) continue;
+      try {
+        let geoData = typeof area.geoJson === 'string' ? JSON.parse(area.geoJson) : area.geoJson;
+        
+        // Función auxiliar para revisar si el punto está en el feature
+        const checkFeature = (feature: any) => {
+          if (feature && feature.geometry && (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon')) {
+            return booleanPointInPolygon(pt, feature);
+          }
+          return false;
+        };
+
+        // Si es un FeatureCollection (tiene un array de features)
+        if (geoData.type === 'FeatureCollection' && Array.isArray(geoData.features)) {
+          for (const feature of geoData.features) {
+            if (checkFeature(feature)) {
+              detectedAreaId = area.id;
+              break;
+            }
+          }
+        } 
+        // Si es un Feature individual (Geoman a veces exporta así una sola capa)
+        else if (geoData.type === 'Feature') {
+          if (checkFeature(geoData)) {
+            detectedAreaId = area.id;
+          }
+        }
+        
+      } catch (e) {
+        console.error('Error procesando polígono', e);
+      }
+      if (detectedAreaId) break;
+    }
+
+    if (detectedAreaId) {
+      this.snackBar.open('¡Área de mapa detectada automáticamente!', 'Cerrar', { duration: 3000, panelClass: 'snackbar-success' });
+      this.autoSelectBarrioByMapArea(detectedAreaId);
+    } else {
+      this.snackBar.open('La dirección no coincide con ninguna zona de entrega mapeada.', 'Cerrar', { duration: 4000, panelClass: 'snackbar-warning' });
+    }
+  }
+
+  private autoSelectBarrioByMapArea(mapAreaId: string) {
+    if (!this.tabuladorSeleccionado) {
+      this.snackBar.open('Selecciona primero un tabulador.', 'Cerrar', { duration: 3000 });
+      return;
+    }
+
+    // Buscamos en el tabulador actual si hay algún barrio asignado a esta área de mapa
+    for (const zona of this.tabuladorSeleccionado.Zones) {
+      if (!zona.Neiborhood) continue;
+      const barrioEncontrado = zona.Neiborhood.find(b => b.MapAreaId === mapAreaId);
+      
+      if (barrioEncontrado) {
+        // Encontramos el barrio. Autocompletamos el formulario.
+        this.seleccionarZona(zona.id);
+        this.orderForm.get('zoneid')?.setValue(zona.id);
+        
+        // Timeout ligero para permitir que Angular actualice la lista dependiente
+        setTimeout(() => {
+          this.seleccionarBarrio(barrioEncontrado.id);
+          this.orderForm.get('idNeiborhood')?.setValue(barrioEncontrado.id);
+          this.snackBar.open(`Barrio autoseleccionado: ${barrioEncontrado.Name}`, 'Cerrar', { duration: 3000, panelClass: 'snackbar-success' });
+        });
+        return;
+      }
+    }
+    
+    this.snackBar.open('El área detectada no está asignada a ningún barrio de tu tabulador.', 'Cerrar', { duration: 4000, panelClass: 'snackbar-warning' });
   }
 
   isRestaurant(): boolean {
@@ -276,6 +570,10 @@ export class OrderComponent {
     this.tabuladorSeleccionado = this.tabuladores?.find(e=> e.id == idtabulador);
     this.zonaSeleccionada = undefined;
     this.barrioSeleccionado = undefined;
+    
+    if (this.map && this.tabuladorSeleccionado) {
+      this.renderTabuladorAreas();
+    }
   }
 
   seleccionarZona(idzona: any) {

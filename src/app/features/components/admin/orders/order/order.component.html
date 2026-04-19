@@ -27,8 +27,21 @@
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Dirección de Envío</mat-label>
           <mat-icon matPrefix>home</mat-icon>
-          <textarea matInput formControlName="shippingAddress"></textarea>
+          <input matInput formControlName="shippingAddress" [matAutocomplete]="auto">
+          <mat-spinner matSuffix *ngIf="isSearchingAddress" diameter="20"></mat-spinner>
+          <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onAddressSelected($event)" [displayWith]="displayAddress">
+            <mat-option *ngFor="let address of filteredAddresses" [value]="address">
+              {{ displayAddress(address) }}
+            </mat-option>
+          </mat-autocomplete>
         </mat-form-field>
+
+        <!-- MAP PREVIEW -->
+        <mat-card class="map-card" style="margin-bottom: 20px; box-shadow: none; border: 1px solid #e0e0e0;">
+          <mat-card-content style="padding: 0;">
+            <div id="order-map" class="map-container"></div>
+          </mat-card-content>
+        </mat-card>
 
         <!-- Tabulator -->
         <mat-form-field appearance="outline" class="full-width">
@@ -59,7 +72,7 @@
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Barrio</mat-label>
             <mat-icon matPrefix>location_city</mat-icon>
-            <mat-select formControlName="idNeiborhood" (selectionChange)="seleccionarBarrio($event.value)" [(ngModel)]="barrioSeleccionado">
+            <mat-select formControlName="idNeiborhood" (selectionChange)="seleccionarBarrio($event.value)">
               <mat-option *ngFor="let barrio of zonaSeleccionada.Neiborhood" [value]="barrio.id">
                 {{ barrio.Name }} - {{ barrio.Price | currency }}
               </mat-option>

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
 import { MatSelectChange, MatSelectModule } from '@angular/material/select';
@@ -23,6 +23,8 @@ import { ConfirmDialogComponent } from '../../../../../shared/components/confirm
 import { ActivatedRoute } from '@angular/router';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { Router } from '@angular/router';
+import * as L from 'leaflet';
+import '@geoman-io/leaflet-geoman-free';
 
 // barrio.interface.ts
 export interface Barrio {
@@ -70,7 +72,7 @@ export interface Tabulador {
     templateUrl: './createtabulators.component.html',
     styleUrls: ['./createtabulators.component.scss']
 })
-export class CreateTabulatorsComponent {
+export class CreateTabulatorsComponent implements AfterViewInit {
   private firestore = inject(Firestore);
   tabuladors: Tabulador[] = [];
   zonasDisponibles: Zona[] = [];
@@ -81,6 +83,8 @@ export class CreateTabulatorsComponent {
   tabuladorId: string | null = null;
   formReady = false;
   mapAreas: any[] = [];
+  map!: L.Map;
+  drawnLayers: L.Layer[] = [];
 
   tabuladorForm: FormGroup;
   
@@ -107,6 +111,87 @@ export class CreateTabulatorsComponent {
     });
 
     this.loadMapAreas();
+    
+    // Suscribirse a cambios en el formulario para actualizar el mapa en vivo
+    this.tabuladorForm.valueChanges.subscribe(() => {
+      if (this.map) {
+        this.renderSelectedAreasOnMap();
+      }
+    });
+  }
+
+  ngAfterViewInit(): void {
+    this.initMap();
+  }
+
+  private initMap(): void {
+    this.map = L.map('tabulator-map').setView([6.2442, -75.5812], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(this.map);
+    
+    // Si ya habían áreas cargadas o el formulario ya tiene datos, las pintamos
+    setTimeout(() => {
+      this.map.invalidateSize();
+      this.renderSelectedAreasOnMap();
+    }, 500);
+  }
+
+  private renderSelectedAreasOnMap(): void {
+    if (!this.map) return;
+    
+    this.map.invalidateSize(); // Asegurar que el mapa conoce su tamaño real
+
+    // Limpiar polígonos anteriores
+    this.drawnLayers.forEach(layer => this.map.removeLayer(layer));
+    this.drawnLayers = [];
+
+    // Recolectar todos los MapAreaId seleccionados en el formulario
+    const selectedAreaIds = new Set<string>();
+    const zones = this.tabuladorForm.value.Zones || [];
+    zones.forEach((zone: any) => {
+      const neiborhoods = zone.Neiborhood || [];
+      neiborhoods.forEach((barrio: any) => {
+        if (barrio.MapAreaId) {
+          selectedAreaIds.add(barrio.MapAreaId);
+        }
+      });
+    });
+
+    if (selectedAreaIds.size === 0) return;
+
+    // Dibujar las áreas seleccionadas
+    const bounds = L.latLngBounds([]);
+    
+    this.mapAreas.forEach(area => {
+      if (selectedAreaIds.has(area.id) && area.geoJson) {
+        let geoData = typeof area.geoJson === 'string' ? JSON.parse(area.geoJson) : area.geoJson;
+        
+        try {
+          const layerGroup = L.geoJSON(geoData, {
+            style: { color: area.color || '#3f51b5', fillOpacity: 0.4 }
+          });
+          
+          layerGroup.eachLayer((l: any) => {
+            l.bindPopup(`<b>Área:</b> ${area.name}`);
+            l.addTo(this.map);
+            this.drawnLayers.push(l);
+            
+            // Si es un polígono, obtenemos sus límites para enfocar la cámara
+            if (l.getBounds) {
+              bounds.extend(l.getBounds());
+            }
+          });
+        } catch (e) {
+          console.error('Error renderizando polígono en tabulador', e);
+        }
+      }
+    });
+
+    // Ajustar la cámara para que se vean todos los polígonos dibujados
+    if (bounds.isValid() && this.drawnLayers.length > 0) {
+      this.map.fitBounds(bounds, { padding: [20, 20], maxZoom: 14 });
+    }
   }
 
   async loadMapAreas() {
@@ -120,6 +205,7 @@ export class CreateTabulatorsComponent {
         ...doc.data()
       }));
       this.cdr.detectChanges();
+      if (this.map) this.renderSelectedAreasOnMap(); // Renderizar si llegan nuevas áreas desde BD
     });
   }
 

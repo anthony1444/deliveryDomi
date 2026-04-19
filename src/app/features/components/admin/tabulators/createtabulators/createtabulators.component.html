@@ -24,6 +24,19 @@
           <mat-icon matPrefix>business</mat-icon>
           <input matInput formControlName="Name" required>
         </mat-form-field>
+
+        <!-- MAP PREVIEW -->
+        <mat-card class="map-card" style="margin-bottom: 20px;">
+          <mat-card-header>
+            <mat-icon mat-card-avatar>map</mat-icon>
+            <mat-card-title>Vista Previa de Cobertura</mat-card-title>
+            <mat-card-subtitle>Las áreas asignadas a los barrios se dibujarán aquí</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div id="tabulator-map" class="map-container"></div>
+          </mat-card-content>
+        </mat-card>
+
         <!-- Sección de Zonas -->
         <mat-accordion>
           <div formArrayName="Zones">
