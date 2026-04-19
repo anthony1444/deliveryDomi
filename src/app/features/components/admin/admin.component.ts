@@ -41,6 +41,7 @@ export class AdminComponent implements OnInit {
     { path: '/tabulators', label: 'Tabuladores', icon: 'table_chart', data: [1] },
     { path: '/createtabulators', label: 'Crear Tabuladores', icon: 'add_chart', data: [1] },
     { path: '/createrestaurant', label: 'Crear Restaurantes', icon: 'restaurant_menu', data: [1] },
+    { path: '/restaurants', label: 'Restaurantes', icon: 'restaurant', data: [1] },
     { path: '/zones', label: 'Áreas de Mapas', icon: 'map', data: [1] },
   ];
 

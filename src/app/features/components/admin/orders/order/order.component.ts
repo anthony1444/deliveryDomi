@@ -138,9 +138,48 @@ export class OrderComponent {
   
 
   ngOnInit(): void {
+    this.checkUserTabulator();
+  }
 
+  isRestaurant(): boolean {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return false;
+    try {
+      const user = JSON.parse(userStr);
+      return user.typeUser == 2 || user.typeUser == "2";
+    } catch {
+      return false;
+    }
+  }
 
-   
+  private async checkUserTabulator() {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return;
+
+    try {
+      const user = JSON.parse(userStr);
+      // typeUser 2 es Restaurante
+      if ((user.typeUser == 2 || user.typeUser == "2") && user.tabulatorid) {
+        // Esperamos a que los tabuladores carguen si es necesario
+        if (!this.tabuladores) {
+          const snapshot = await getDocs(collection(this.firestore, 'tabuladores'));
+          this.tabuladores = snapshot.docs.map(doc => ({
+            id: doc.id, 
+            ...doc.data()
+          }));
+        }
+
+        const tabId = user.tabulatorid;
+        this.orderForm.get('tabulatorid')?.setValue(tabId);
+        
+        // Si es restaurante, bloqueamos el campo para que no elija otro
+        this.orderForm.get('tabulatorid')?.disable();
+        
+        this.seleccionarTabulador(tabId);
+      }
+    } catch (e) {
+      console.error('Error checking user tabulator:', e);
+    }
   }
 
   // getTabuladores(): Observable<Tabulador[]> {
@@ -193,7 +232,7 @@ export class OrderComponent {
         iduser:1,
         idNeiborhood:this.orderForm.get('idNeiborhood')?.value,
         zoneid:this.orderForm.get('zoneid')?.value,
-        tabulatorid:this.orderForm.get('tabulatorid')?.value,
+        tabulatorid:this.orderForm.getRawValue().tabulatorid, // Usamos getRawValue() porque el campo puede estar deshabilitado
       };
       await this.orderService.createOrder(order);
       this.snackBar.open('¡Orden creada con éxito!', 'Cerrar', { duration: 3000, panelClass: 'snackbar-success' });
@@ -224,7 +263,7 @@ export class OrderComponent {
 
   // }
 
-  seleccionarBarrio(idBarrio: number) {
+  seleccionarBarrio(idBarrio: any) {
     console.log("asd");
     
     this.selectedBarrio = this.zonaSeleccionada?.Neiborhood.find(e=> e.id == idBarrio);
@@ -232,14 +271,14 @@ export class OrderComponent {
   }
 
 
-  seleccionarTabulador(idtabulador: number) {
+  seleccionarTabulador(idtabulador: any) {
     
     this.tabuladorSeleccionado = this.tabuladores?.find(e=> e.id == idtabulador);
     this.zonaSeleccionada = undefined;
     this.barrioSeleccionado = undefined;
   }
 
-  seleccionarZona(idzona: number) {
+  seleccionarZona(idzona: any) {
     this.zonaSeleccionada = this.tabuladorSeleccionado?.Zones.find(e=> e.id == idzona);
     this.barrioSeleccionado = undefined;
   }

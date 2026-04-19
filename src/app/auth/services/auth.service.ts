@@ -52,7 +52,7 @@ private usersPath = 'users'; // Ruta en Firebase
     });
   }
 
-  async registerUserTypeRestaurant(email: string, password: string, name: string, phone: string, typeUser:number, tabulatorid:number) {
+  async registerUserTypeRestaurant(email: string, password: string, name: string, phone: string, typeUser:number, tabulatorid: string | number) {
     const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
     const user = userCredential.user;
 

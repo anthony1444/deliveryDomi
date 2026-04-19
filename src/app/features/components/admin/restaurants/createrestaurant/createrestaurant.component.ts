@@ -38,7 +38,7 @@ export class CreaterestaurantComponent {
   tabuladores?: any[];
   private firestore: Firestore = inject(Firestore);
   tabuladorSeleccionado: any;
-  tabulatoridSelected: number = 0;
+  tabulatoridSelected: string = '';
 
   constructor(
     private authService: AuthService, 
@@ -122,8 +122,8 @@ export class CreaterestaurantComponent {
     this.router.navigate(['login']);
   }
 
-  seleccionarTabulador(idtabulador: number) {
+  seleccionarTabulador(idtabulador: string) {
     this.tabuladorSeleccionado = this.tabuladores?.find(e => e.id == idtabulador);
-    this.tabulatoridSelected = this.tabuladorSeleccionado.id;
+    this.tabulatoridSelected = String(this.tabuladorSeleccionado.id);
   }
 }

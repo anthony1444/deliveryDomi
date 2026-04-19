@@ -15,7 +15,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ModalFormNeiborhoodComponent } from '../../../../../modal-form-neiborhood/modal-form-neiborhood.component';
 import { SelectCustomComponent } from '../../../../../shared/components/select-custom/select-custom.component';
-import { addDoc, collection, Firestore, doc, getDoc, updateDoc, query, where, getDocs, collectionData } from '@angular/fire/firestore';
+import { addDoc, collection, Firestore, doc, getDoc, updateDoc, query, where, getDocs, collectionData, onSnapshot } from '@angular/fire/firestore';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -111,8 +111,15 @@ export class CreateTabulatorsComponent {
 
   async loadMapAreas() {
     const areasCollection = collection(this.firestore, 'zones');
-    collectionData(areasCollection, { idField: 'id' }).subscribe(areas => {
-      this.mapAreas = areas;
+    const q = query(areasCollection);
+    
+    // Usamos onSnapshot para evitar el error de tipos de Firebase y asegurar carga real
+    onSnapshot(q, (snapshot) => {
+      this.mapAreas = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      this.cdr.detectChanges();
     });
   }
 

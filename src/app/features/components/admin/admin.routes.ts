@@ -6,6 +6,7 @@ export const routes: Routes = [
     { path: '', component:AdminComponent, children:[
         { path: 'order', loadComponent: ()=> import('./orders/order/order.component').then(c => c.OrderComponent), data:[1,2],canActivate:[permisionsGuard]},
         { path: 'createrestaurant', loadComponent: ()=> import('./restaurants/createrestaurant/createrestaurant.component').then(c => c.CreaterestaurantComponent), data:[1],canActivate:[permisionsGuard]},
+        { path: 'restaurants', loadComponent: ()=> import('./restaurants/restaurants-list/restaurants-list.component').then(c => c.RestaurantsListComponent), data:[1],canActivate:[permisionsGuard]},
         { path: 'orders', loadComponent: ()=> import('./orders/orders/orders.component').then(c => c.OrdersComponent),data:[1,2,3]  ,canActivate:[permisionsGuard]},
         { path: 'myorders', loadComponent: ()=> import('./orders/myorders/myorders.component').then(c => c.MyOrdersComponent),data:[1,2,3]  ,canActivate:[permisionsGuard]},
         { path: 'tabulators',loadComponent: ()=> import('./tabulators/tabulators-list/tabulators-list.component').then(c=>c.TabulatorsListComponent),data:[1,2,3]  ,canActivate:[permisionsGuard]},

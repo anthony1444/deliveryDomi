@@ -1,7 +1,7 @@
 import { Component, OnInit, AfterViewInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Firestore, collection, addDoc, collectionData, query, deleteDoc, doc, updateDoc } from '@angular/fire/firestore';
+import { Firestore, collection, addDoc, collectionData, query, deleteDoc, doc, updateDoc, onSnapshot } from '@angular/fire/firestore';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -45,7 +45,6 @@ export class ZonesComponent implements OnInit, AfterViewInit {
   private snackBar = inject(MatSnackBar);
   
   map!: L.Map;
-  mapAreas$: Observable<MapArea[]>;
   mapAreas: MapArea[] = [];
   
   selectedLayer: any = null;
@@ -54,14 +53,28 @@ export class ZonesComponent implements OnInit, AfterViewInit {
   isSaving: boolean = false;
   
   constructor() {
-    const areasCollection = collection(this.firestore, 'zones'); // Keeping collection name 'zones' for now or change to 'map_areas'
-    this.mapAreas$ = collectionData(areasCollection, { idField: 'id' }) as Observable<MapArea[]>;
+    // onSnapshot se inicializará en ngOnInit para mayor control
   }
 
   ngOnInit(): void {
-    this.mapAreas$.subscribe(data => {
-      this.mapAreas = data;
-      this.renderAreasOnMap();
+    const areasCollection = collection(this.firestore, 'zones');
+    
+    // Usamos onSnapshot directamente para mayor fiabilidad con los tipos de Firebase
+    onSnapshot(areasCollection, {
+      next: (snapshot) => {
+        const data = snapshot.docs.map(d => ({
+          id: d.id,
+          ...d.data()
+        })) as MapArea[];
+        
+        console.log('Áreas de mapa recibidas:', data.length, data);
+        this.mapAreas = data;
+        this.renderAreasOnMap();
+      },
+      error: (err) => {
+        console.error('Error en onSnapshot de áreas de mapa:', err);
+        this.snackBar.open('Error al cargar áreas de mapa. Verifica permisos.', 'Cerrar', { duration: 5000 });
+      }
     });
   }
 
@@ -117,26 +130,35 @@ export class ZonesComponent implements OnInit, AfterViewInit {
     });
 
     this.mapAreas.forEach(area => {
+      if (!area.geoJson) {
+        console.warn('Área sin geoJson detectada:', area.name);
+        return;
+      }
+
       let geoData = area.geoJson;
       // Si se guardó como string para evitar errores de Firebase, lo parseamos
       if (typeof geoData === 'string') {
         try {
           geoData = JSON.parse(geoData);
         } catch (e) {
-          console.error('Error parsing geoJson string', e);
+          console.error('Error parsing geoJson string para área:', area.name, e);
           return;
         }
       }
 
-      const layer = L.geoJSON(geoData, {
-        style: { color: area.color || '#3388ff', fillOpacity: 0.4 }
-      });
-      
-      layer.eachLayer((l: any) => {
-        l.options.id = area.id;
-        l.bindPopup(`<b>${area.name}</b><br>Precio: $${area.price || 0}`);
-        l.addTo(this.map);
-      });
+      try {
+        const layer = L.geoJSON(geoData, {
+          style: { color: area.color || '#3388ff', fillOpacity: 0.4 }
+        });
+        
+        layer.eachLayer((l: any) => {
+          l.options.id = area.id;
+          l.bindPopup(`<b>${area.name}</b><br>Precio: $${area.price || 0}`);
+          l.addTo(this.map);
+        });
+      } catch (e) {
+        console.error('Error al renderizar GeoJSON en el mapa para área:', area.name, e);
+      }
     });
   }
 
