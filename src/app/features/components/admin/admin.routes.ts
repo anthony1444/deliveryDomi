@@ -10,6 +10,7 @@ export const routes: Routes = [
         { path: 'myorders', loadComponent: ()=> import('./orders/myorders/myorders.component').then(c => c.MyOrdersComponent),data:[1,2,3]  ,canActivate:[permisionsGuard]},
         { path: 'tabulators',loadComponent: ()=> import('./tabulators/tabulators-list/tabulators-list.component').then(c=>c.TabulatorsListComponent),data:[1,2,3]  ,canActivate:[permisionsGuard]},
         { path: 'createtabulators',loadComponent: ()=> import('./tabulators/createtabulators/createtabulators.component').then(c=>c.CreateTabulatorsComponent),data:[1,2,3]  ,canActivate:[permisionsGuard]},
+        { path: 'zones', loadComponent: () => import('./zones/zones.component').then(c => c.ZonesComponent), data: [1], canActivate: [permisionsGuard] },
         { path: '',loadComponent: ()=> import('./home/home.component').then(c=>c.HomeComponent) ,data:[1,2,3] ,canActivate:[permisionsGuard]},
        
 

@@ -1,0 +1,107 @@
+.zones-container {
+  display: flex;
+  height: calc(100vh - 64px); // Ajustar según altura del navbar
+  width: 100%;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 350px;
+  height: 100%;
+  padding: 16px;
+  background: #f5f5f5;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  z-index: 1000;
+  overflow-y: auto;
+
+  .sidebar-card {
+    height: auto;
+    border-radius: 12px;
+  }
+}
+
+.map-container {
+  flex: 1;
+  height: 100%;
+}
+
+.new-zone-form {
+  margin-top: 20px;
+  padding: 16px;
+  background: #e3f2fd;
+  border-radius: 8px;
+  border: 1px solid #90caf9;
+
+  h3 {
+    margin-top: 0;
+    color: #1976d2;
+    font-size: 1.1rem;
+  }
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.instructions {
+  margin: 20px 0;
+  text-align: center;
+  color: #666;
+
+  mat-icon {
+    font-size: 40px;
+    height: 40px;
+    width: 40px;
+    margin-bottom: 8px;
+  }
+}
+
+.zones-list {
+  margin-top: 24px;
+
+  h3 {
+    font-size: 1rem;
+    color: #333;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+  }
+}
+
+.zone-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  margin-bottom: 8px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+
+  .zone-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 12px;
+  }
+
+  .zone-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .zone-name {
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .zone-price {
+      font-size: 0.8rem;
+      color: #666;
+    }
+  }
+}
+
+mat-divider {
+  margin: 20px 0;
+}

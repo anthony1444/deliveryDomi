@@ -15,7 +15,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ModalFormNeiborhoodComponent } from '../../../../../modal-form-neiborhood/modal-form-neiborhood.component';
 import { SelectCustomComponent } from '../../../../../shared/components/select-custom/select-custom.component';
-import { addDoc, collection, Firestore, doc, getDoc, updateDoc, query, where, getDocs } from '@angular/fire/firestore';
+import { addDoc, collection, Firestore, doc, getDoc, updateDoc, query, where, getDocs, collectionData } from '@angular/fire/firestore';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -30,6 +30,7 @@ export interface Barrio {
   Name: string;
   Price: string | number;
   Idzone: number;
+  MapAreaId?: string;
 }
 
 // zona.interface.ts
@@ -79,6 +80,7 @@ export class CreateTabulatorsComponent {
   jsonInput: string = '';
   tabuladorId: string | null = null;
   formReady = false;
+  mapAreas: any[] = [];
 
   tabuladorForm: FormGroup;
   
@@ -102,6 +104,15 @@ export class CreateTabulatorsComponent {
         this.tabuladorId = params['id'];
         await this.loadTabulador(this.tabuladorId);
       }
+    });
+
+    this.loadMapAreas();
+  }
+
+  async loadMapAreas() {
+    const areasCollection = collection(this.firestore, 'zones');
+    collectionData(areasCollection, { idField: 'id' }).subscribe(areas => {
+      this.mapAreas = areas;
     });
   }
 
@@ -129,7 +140,8 @@ export class CreateTabulatorsComponent {
     this.getNeiborhoods(zoneIndex).push(this.fb.group({
       id: [0, Validators.required],
       Name: ['', Validators.required],
-      Price: [0, Validators.required]
+      Price: [0, Validators.required],
+      MapAreaId: ['']
     }));
   }
 
@@ -160,7 +172,8 @@ export class CreateTabulatorsComponent {
             neiborhoodArray.push(this.fb.group({
               id: [barrio['id'], Validators.required],
               Name: [barrio['Name'], Validators.required],
-              Price: [barrio['Price'], Validators.required]
+              Price: [barrio['Price'], Validators.required],
+              MapAreaId: [barrio['MapAreaId'] || '']
             }));
           });
         }
@@ -217,7 +230,8 @@ export class CreateTabulatorsComponent {
               neiborhoodArray.push(this.fb.group({
                 id: [barrio['id'], Validators.required],
                 Name: [barrio['Name'], Validators.required],
-                Price: [barrio['Price'], Validators.required]
+                Price: [barrio['Price'], Validators.required],
+                MapAreaId: [barrio['MapAreaId'] || '']
               }));
             });
           }
@@ -309,7 +323,8 @@ export class CreateTabulatorsComponent {
             neiborhoodArray.push(this.fb.group({
               id: [barrio.id, Validators.required],
               Name: [barrio.Name, Validators.required],
-              Price: [barrio.Price, Validators.required]
+              Price: [barrio.Price, Validators.required],
+              MapAreaId: [barrio.MapAreaId || '']
             }));
           });
         }

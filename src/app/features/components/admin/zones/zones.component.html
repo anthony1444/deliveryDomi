@@ -1,0 +1,54 @@
+<div class="zones-container">
+  <div class="sidebar">
+    <mat-card class="sidebar-card">
+      <mat-card-header>
+        <mat-card-title>Gestión de Áreas de Mapas</mat-card-title>
+        <mat-card-subtitle>Dibuja polígonos en el mapa para definir áreas precisas</mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div *ngIf="selectedLayer" class="new-zone-form">
+          <h3>Nueva Área Detectada</h3>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nombre del Área (ej. Comuna 13)</mat-label>
+            <input matInput [(ngModel)]="newAreaName" placeholder="Ingrese nombre...">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Precio de Envío Sugerido</mat-label>
+            <input matInput type="number" [(ngModel)]="newAreaPrice" placeholder="0">
+            <span matPrefix>$&nbsp;</span>
+          </mat-form-field>
+
+          <button mat-raised-button color="primary" class="full-width" (click)="saveNewZone()" [disabled]="isSaving">
+            <mat-icon>save</mat-icon>
+            {{ isSaving ? 'Guardando...' : 'Guardar Área de Mapa' }}
+          </button>
+        </div>
+
+        <div *ngIf="!selectedLayer" class="instructions">
+          <mat-icon color="primary">map</mat-icon>
+          <p>Utiliza las herramientas en el mapa para dibujar una nueva área geográfica.</p>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="zones-list">
+          <h3>Áreas de Mapas Guardadas ({{ mapAreas.length }})</h3>
+          <div *ngFor="let area of mapAreas" class="zone-item">
+            <div class="zone-color" [style.background-color]="area.color"></div>
+            <div class="zone-info">
+              <span class="zone-name">{{ area.name }}</span>
+              <span class="zone-price">${{ area.price || 0 }}</span>
+            </div>
+            <button mat-icon-button color="warn" (click)="deleteZone(area.id!)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div id="map" class="map-container"></div>
+</div>
