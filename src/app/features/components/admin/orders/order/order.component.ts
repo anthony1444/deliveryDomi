@@ -362,8 +362,24 @@ export class OrderComponent implements AfterViewInit {
   private detectMapAreaFromCoordinates(lat: number, lon: number) {
     const pt = point([lon, lat]); // Turf usa [longitud, latitud]
     let detectedAreaId: string | null = null;
+    
+    // Recopilar los MapAreaId que realmente pertenecen al tabulador seleccionado
+    const tabulatorAreaIds = new Set<string>();
+    if (this.tabuladorSeleccionado && this.tabuladorSeleccionado.Zones) {
+      this.tabuladorSeleccionado.Zones.forEach((zone: any) => {
+        const neiborhoods = zone.Neiborhood || [];
+        neiborhoods.forEach((barrio: any) => {
+          if (barrio.MapAreaId) {
+            tabulatorAreaIds.add(barrio.MapAreaId);
+          }
+        });
+      });
+    }
 
     for (const area of this.mapAreas) {
+      // Ignorar las áreas que no están configuradas en el tabulador actual
+      if (!tabulatorAreaIds.has(area.id)) continue;
+
       if (!area.geoJson) continue;
       try {
         let geoData = typeof area.geoJson === 'string' ? JSON.parse(area.geoJson) : area.geoJson;
