@@ -442,6 +442,8 @@ export class OrderComponent implements AfterViewInit {
         setTimeout(() => {
           this.seleccionarBarrio(barrioEncontrado.id);
           this.orderForm.get('idNeiborhood')?.setValue(barrioEncontrado.id);
+          console.log("aqui", barrioEncontrado);
+          
           this.snackBar.open(`Barrio autoseleccionado: ${barrioEncontrado.Name}`, 'Cerrar', { duration: 3000, panelClass: 'snackbar-success' });
         });
         return;
@@ -576,7 +578,20 @@ export class OrderComponent implements AfterViewInit {
   seleccionarBarrio(idBarrio: any) {
     console.log("asd");
     
-    this.selectedBarrio = this.zonaSeleccionada?.Neiborhood.find(e=> e.id == idBarrio);
+    if (!this.zonaSeleccionada) {
+      // Buscar la zona y el barrio asociado con el id
+      const { zona, barrio } = this.findZoneAndBarrioByBarrioId(idBarrio);
+      console.log("Zona encontrada:", zona);
+      if (zona) {
+        this.seleccionarZona(zona.id);
+        this.orderForm.get('zoneid')?.setValue(zona.id);
+      }
+      this.selectedBarrio = barrio;
+      this.barrioSeleccionado = barrio;
+    } else {
+      this.selectedBarrio = this.zonaSeleccionada.Neiborhood.find(e=> e.id == idBarrio);
+      this.barrioSeleccionado = this.selectedBarrio;
+    }
     this.orderForm.get('totalAmount')?.setValue(this.selectedBarrio?.Price);
   }
 
@@ -597,7 +612,17 @@ export class OrderComponent implements AfterViewInit {
     this.barrioSeleccionado = undefined;
   }
 
- 
+  private findZoneAndBarrioByBarrioId(barrioId: number): { zona: Zona | undefined, barrio: Barrio | undefined } {
+    if (!this.tabuladorSeleccionado) return { zona: undefined, barrio: undefined };
+
+    for (const zona of this.tabuladorSeleccionado.Zones) {
+      const barrio = zona.Neiborhood?.find(b => b.id === barrioId);
+      if (barrio) {
+        return { zona, barrio };
+      }
+    }
+    return { zona: undefined, barrio: undefined };
+  }
   
 
 }

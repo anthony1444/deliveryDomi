@@ -219,10 +219,12 @@ export class CreateTabulatorsComponent implements AfterViewInit {
       Name: ['', Validators.required],
       Neiborhood: this.fb.array([])
     }));
+    this.reindexZones();
   }
 
   removeZone(index: number) {
     this.zones.removeAt(index);
+    this.reindexZones();
   }
 
   getNeiborhoods(zoneIndex: number): FormArray {
@@ -236,10 +238,34 @@ export class CreateTabulatorsComponent implements AfterViewInit {
       Price: [0, Validators.required],
       MapAreaId: ['']
     }));
+    this.reindexNeiborhoods(zoneIndex);
   }
 
   removeNeiborhood(zoneIndex: number, barrioIndex: number) {
     this.getNeiborhoods(zoneIndex).removeAt(barrioIndex);
+    this.reindexNeiborhoods(zoneIndex);
+  }
+
+  private reindexNeiborhoods(zoneIndex: number) {
+    const neiborhoodArray = this.getNeiborhoods(zoneIndex);
+    neiborhoodArray.controls.forEach((neiControl, index) => {
+      neiControl.get('id')?.setValue(index, { emitEvent: false });
+    });
+  }
+
+  private reindexZones() {
+    this.zones.controls.forEach((zoneControl, index) => {
+      zoneControl.get('id')?.setValue(index, { emitEvent: false });
+      const neiborhoodArray = zoneControl.get('Neiborhood') as FormArray;
+      if (neiborhoodArray) {
+        neiborhoodArray.controls.forEach((neiControl, neiIndex) => {
+          neiControl.get('id')?.setValue(neiIndex, { emitEvent: false });
+          if (neiControl.get('Idzone')) {
+            neiControl.get('Idzone')?.setValue(index, { emitEvent: false });
+          }
+        });
+      }
+    });
   }
 
   async loadTabulador(docId: string) {
@@ -278,6 +304,7 @@ export class CreateTabulatorsComponent implements AfterViewInit {
         zonesArray.push(zoneGroup);
       });
       this.tabuladorForm.setControl('Zones', zonesArray);
+      this.reindexZones();
       this.formReady = true;
       this.snackBar.open('Tabulador cargado para edición', 'Cerrar', { duration: 2000 });
       this.tabuladorId = docId;
@@ -330,6 +357,7 @@ export class CreateTabulatorsComponent implements AfterViewInit {
           }
           this.zones.push(zoneGroup);
         });
+        this.reindexZones();
         this.snackBar.open(`Tabulador cargado por ${campo}`, 'Cerrar', { duration: 2000 });
         return true;
       } else {
@@ -350,6 +378,9 @@ export class CreateTabulatorsComponent implements AfterViewInit {
       });
       return;
     }
+
+    this.reindexZones();
+    this.cdr.detectChanges();
 
     // Diálogo de confirmación
     const confirm = await this.dialog.open(ConfirmDialogComponent, {
@@ -424,7 +455,8 @@ export class CreateTabulatorsComponent implements AfterViewInit {
   
         this.zones.push(zoneGroup);
       });
-  
+
+      this.reindexZones();
       this.snackBar.open('Datos cargados desde el JSON exitosamente', 'Cerrar', { 
         duration: 3000, 
         panelClass: 'snackbar-success' 
