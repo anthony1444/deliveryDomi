@@ -1,7 +1,4 @@
 import { Component, inject, AfterViewInit } from '@angular/core';
-import * as L from 'leaflet';
-import '@geoman-io/leaflet-geoman-free';
-import 'leaflet-control-geocoder';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -111,9 +108,10 @@ export class OrderComponent implements AfterViewInit {
   mapAreas: any[] = [];
 
   // Mapa
-  map!: L.Map;
-  addressMarker: L.Marker | null = null;
-  drawnLayers: L.Layer[] = [];
+  map!: any;
+  addressMarker: any = null;
+  drawnLayers: any[] = [];
+  private L: any = null; // Almacenar L localmente
 
 
 
@@ -171,28 +169,41 @@ export class OrderComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // Asegurar que Leaflet está disponible antes de inicializar el mapa
-    if (typeof L !== 'undefined') {
+    // Cargar dinámicamente Leaflet y sus plugins
+    this.loadLeafletDynamically();
+  }
+
+  private async loadLeafletDynamically(): Promise<void> {
+    try {
+      // Importar Leaflet dinámicamente
+      const leaflet = await import('leaflet');
+      this.L = leaflet.default || leaflet;
+      
+      // Importar plugins de Leaflet
+      await import('@geoman-io/leaflet-geoman-free');
+      await import('leaflet-control-geocoder');
+      
+      // Ahora inicializar el mapa
       this.initMap();
-    } else {
-      console.warn('Leaflet no está disponible');
+    } catch (error) {
+      console.error('Error cargando Leaflet:', error);
       this.snackBar.open('Error al cargar el mapa. Recargue la página.', 'Cerrar', { duration: 5000, panelClass: 'snackbar-error' });
     }
   }
 
   private initMap(): void {
     try {
-      if (!L || typeof L.map !== 'function') {
+      if (!this.L || typeof this.L.map !== 'function') {
         throw new Error('Leaflet no está disponible');
       }
 
-      this.map = L.map('order-map').setView([6.2442, -75.5812], 12);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      this.map = this.L.map('order-map').setView([6.2442, -75.5812], 12);
+      this.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
       }).addTo(this.map);
       
       // Configurar icono por defecto para evitar errores de assets perdidos
-      const DefaultIcon = L.icon({
+      const DefaultIcon = this.L.icon({
         iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
         shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
         iconSize: [25, 41],
@@ -200,10 +211,10 @@ export class OrderComponent implements AfterViewInit {
         popupAnchor: [1, -34],
         shadowSize: [41, 41]
       });
-      L.Marker.prototype.options.icon = DefaultIcon;
+      this.L.Marker.prototype.options.icon = DefaultIcon;
       
       // A) Añadir Buscador Interno del mapa
-      const geocoderControl = (L.Control as any).geocoder({
+      const geocoderControl = (this.L.Control as any).geocoder({
         defaultMarkGeocode: false,
         placeholder: "Buscar en el mapa...",
         errorMessage: "No encontrado."
@@ -251,7 +262,7 @@ export class OrderComponent implements AfterViewInit {
   }
 
   private renderTabuladorAreas(): void {
-    if (!this.map || !this.tabuladorSeleccionado || typeof L === 'undefined') return;
+    if (!this.map || !this.tabuladorSeleccionado || !this.L) return;
     
     this.map.invalidateSize();
 
@@ -270,13 +281,13 @@ export class OrderComponent implements AfterViewInit {
       });
     });
 
-    const bounds = L.latLngBounds([]);
+    const bounds = this.L.latLngBounds([]);
     
     this.mapAreas.forEach(area => {
       if (selectedAreaIds.has(area.id) && area.geoJson) {
         let geoData = typeof area.geoJson === 'string' ? JSON.parse(area.geoJson) : area.geoJson;
         try {
-          const layerGroup = L.geoJSON(geoData, {
+          const layerGroup = this.L.geoJSON(geoData, {
             style: { color: area.color || '#3f51b5', fillOpacity: 0.2 } // Opacidad menor para pedidos
           });
           layerGroup.eachLayer((l: any) => {
@@ -356,11 +367,11 @@ export class OrderComponent implements AfterViewInit {
 
   private handleMapLocationSelection(lat: number, lon: number, addressText: string) {
     // 1. Poner Pin
-    if (this.map && typeof L !== 'undefined') {
+    if (this.map && this.L) {
       if (this.addressMarker) {
         this.map.removeLayer(this.addressMarker);
       }
-      this.addressMarker = L.marker([lat, lon]).addTo(this.map);
+      this.addressMarker = this.L.marker([lat, lon]).addTo(this.map);
       if (this.addressMarker) {
         this.addressMarker.bindPopup(`<b>${addressText}</b>`).openPopup();
       }
@@ -631,7 +642,7 @@ export class OrderComponent implements AfterViewInit {
     this.zonaSeleccionada = undefined;
     this.barrioSeleccionado = undefined;
     
-    if (this.map && this.tabuladorSeleccionado && typeof L !== 'undefined') {
+    if (this.map && this.tabuladorSeleccionado && this.L) {
       this.renderTabuladorAreas();
     }
   }
