@@ -161,78 +161,97 @@ export class OrderComponent implements AfterViewInit {
   
 
   ngOnInit(): void {
+    // Deshabilitar los campos de zona y barrio para que solo el mapa pueda actualizarlos
+    this.orderForm.get('zoneid')?.disable();
+    this.orderForm.get('idNeiborhood')?.disable();
+    
     this.checkUserTabulator();
     this.loadMapAreas();
     this.setupAddressAutocomplete();
   }
 
   ngAfterViewInit(): void {
-    this.initMap();
+    // Asegurar que Leaflet está disponible antes de inicializar el mapa
+    if (typeof L !== 'undefined') {
+      this.initMap();
+    } else {
+      console.warn('Leaflet no está disponible');
+      this.snackBar.open('Error al cargar el mapa. Recargue la página.', 'Cerrar', { duration: 5000, panelClass: 'snackbar-error' });
+    }
   }
 
   private initMap(): void {
-    this.map = L.map('order-map').setView([6.2442, -75.5812], 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(this.map);
-    
-    // Configurar icono por defecto para evitar errores de assets perdidos
-    const DefaultIcon = L.icon({
-      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41]
-    });
-    L.Marker.prototype.options.icon = DefaultIcon;
-    
-    // A) Añadir Buscador Interno del mapa
-    const geocoderControl = (L.Control as any).geocoder({
-      defaultMarkGeocode: false,
-      placeholder: "Buscar en el mapa...",
-      errorMessage: "No encontrado."
-    })
-    .on('markgeocode', (e: any) => {
-      const latlng = e.geocode.center;
-      const address = e.geocode.name;
-      this.handleMapLocationSelection(latlng.lat, latlng.lng, address);
-    })
-    .addTo(this.map);
+    try {
+      if (!L || typeof L.map !== 'function') {
+        throw new Error('Leaflet no está disponible');
+      }
 
-    // B) Añadir Reverse Geocoding al hacer clic en el mapa
-    this.map.on('click', (e: any) => {
-      const lat = e.latlng.lat;
-      const lon = e.latlng.lng;
+      this.map = L.map('order-map').setView([6.2442, -75.5812], 12);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(this.map);
       
-      this.snackBar.open('Buscando dirección...', '', { duration: 1500 });
+      // Configurar icono por defecto para evitar errores de assets perdidos
+      const DefaultIcon = L.icon({
+        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
+      L.Marker.prototype.options.icon = DefaultIcon;
       
-      // Llamada a ArcGIS para Reverse Geocoding
-      const url = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode?location=${lon},${lat}&f=json`;
-      this.http.get<any>(url).subscribe({
-        next: (response) => {
-          if (response && response.address && response.address.Match_addr) {
-            this.handleMapLocationSelection(lat, lon, response.address.Match_addr);
-          } else {
+      // A) Añadir Buscador Interno del mapa
+      const geocoderControl = (L.Control as any).geocoder({
+        defaultMarkGeocode: false,
+        placeholder: "Buscar en el mapa...",
+        errorMessage: "No encontrado."
+      })
+      .on('markgeocode', (e: any) => {
+        const latlng = e.geocode.center;
+        const address = e.geocode.name;
+        this.handleMapLocationSelection(latlng.lat, latlng.lng, address);
+      })
+      .addTo(this.map);
+
+      // B) Añadir Reverse Geocoding al hacer clic en el mapa
+      this.map.on('click', (e: any) => {
+        const lat = e.latlng.lat;
+        const lon = e.latlng.lng;
+        
+        this.snackBar.open('Buscando dirección...', '', { duration: 1500 });
+        
+        // Llamada a ArcGIS para Reverse Geocoding
+        const url = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode?location=${lon},${lat}&f=json`;
+        this.http.get<any>(url).subscribe({
+          next: (response) => {
+            if (response && response.address && response.address.Match_addr) {
+              this.handleMapLocationSelection(lat, lon, response.address.Match_addr);
+            } else {
+              this.handleMapLocationSelection(lat, lon, 'Dirección manual en mapa');
+            }
+          },
+          error: () => {
             this.handleMapLocationSelection(lat, lon, 'Dirección manual en mapa');
           }
-        },
-        error: () => {
-          this.handleMapLocationSelection(lat, lon, 'Dirección manual en mapa');
-        }
+        });
       });
-    });
 
-    setTimeout(() => {
-      this.map.invalidateSize();
-      if (this.tabuladorSeleccionado) {
-        this.renderTabuladorAreas();
-      }
-    }, 500);
+      setTimeout(() => {
+        this.map.invalidateSize();
+        if (this.tabuladorSeleccionado) {
+          this.renderTabuladorAreas();
+        }
+      }, 500);
+    } catch (error) {
+      console.error('Error al inicializar el mapa:', error);
+      this.snackBar.open('Error al cargar el mapa. Recargue la página.', 'Cerrar', { duration: 5000, panelClass: 'snackbar-error' });
+    }
   }
 
   private renderTabuladorAreas(): void {
-    if (!this.map || !this.tabuladorSeleccionado) return;
+    if (!this.map || !this.tabuladorSeleccionado || typeof L === 'undefined') return;
     
     this.map.invalidateSize();
 
@@ -337,12 +356,14 @@ export class OrderComponent implements AfterViewInit {
 
   private handleMapLocationSelection(lat: number, lon: number, addressText: string) {
     // 1. Poner Pin
-    if (this.map) {
+    if (this.map && typeof L !== 'undefined') {
       if (this.addressMarker) {
         this.map.removeLayer(this.addressMarker);
       }
       this.addressMarker = L.marker([lat, lon]).addTo(this.map);
-      this.addressMarker.bindPopup(`<b>${addressText}</b>`).openPopup();
+      if (this.addressMarker) {
+        this.addressMarker.bindPopup(`<b>${addressText}</b>`).openPopup();
+      }
       this.map.setView([lat, lon], 16, { animate: true });
     }
 
@@ -360,65 +381,70 @@ export class OrderComponent implements AfterViewInit {
   }
 
   private detectMapAreaFromCoordinates(lat: number, lon: number) {
-    const pt = point([lon, lat]); // Turf usa [longitud, latitud]
-    let detectedAreaId: string | null = null;
-    
-    // Recopilar los MapAreaId que realmente pertenecen al tabulador seleccionado
-    const tabulatorAreaIds = new Set<string>();
-    if (this.tabuladorSeleccionado && this.tabuladorSeleccionado.Zones) {
-      this.tabuladorSeleccionado.Zones.forEach((zone: any) => {
-        const neiborhoods = zone.Neiborhood || [];
-        neiborhoods.forEach((barrio: any) => {
-          if (barrio.MapAreaId) {
-            tabulatorAreaIds.add(barrio.MapAreaId);
-          }
+    try {
+      const pt = point([lon, lat]); // Turf usa [longitud, latitud]
+      let detectedAreaId: string | null = null;
+      
+      // Recopilar los MapAreaId que realmente pertenecen al tabulador seleccionado
+      const tabulatorAreaIds = new Set<string>();
+      if (this.tabuladorSeleccionado && this.tabuladorSeleccionado.Zones) {
+        this.tabuladorSeleccionado.Zones.forEach((zone: any) => {
+          const neiborhoods = zone.Neiborhood || [];
+          neiborhoods.forEach((barrio: any) => {
+            if (barrio.MapAreaId) {
+              tabulatorAreaIds.add(barrio.MapAreaId);
+            }
+          });
         });
-      });
-    }
+      }
 
-    for (const area of this.mapAreas) {
-      // Ignorar las áreas que no están configuradas en el tabulador actual
-      if (!tabulatorAreaIds.has(area.id)) continue;
+      for (const area of this.mapAreas) {
+        // Ignorar las áreas que no están configuradas en el tabulador actual
+        if (!tabulatorAreaIds.has(area.id)) continue;
 
-      if (!area.geoJson) continue;
-      try {
-        let geoData = typeof area.geoJson === 'string' ? JSON.parse(area.geoJson) : area.geoJson;
-        
-        // Función auxiliar para revisar si el punto está en el feature
-        const checkFeature = (feature: any) => {
-          if (feature && feature.geometry && (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon')) {
-            return booleanPointInPolygon(pt, feature);
-          }
-          return false;
-        };
+        if (!area.geoJson) continue;
+        try {
+          let geoData = typeof area.geoJson === 'string' ? JSON.parse(area.geoJson) : area.geoJson;
+          
+          // Función auxiliar para revisar si el punto está en el feature
+          const checkFeature = (feature: any) => {
+            if (feature && feature.geometry && (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon')) {
+              return booleanPointInPolygon(pt, feature);
+            }
+            return false;
+          };
 
-        // Si es un FeatureCollection (tiene un array de features)
-        if (geoData.type === 'FeatureCollection' && Array.isArray(geoData.features)) {
-          for (const feature of geoData.features) {
-            if (checkFeature(feature)) {
+          // Si es un FeatureCollection (tiene un array de features)
+          if (geoData.type === 'FeatureCollection' && Array.isArray(geoData.features)) {
+            for (const feature of geoData.features) {
+              if (checkFeature(feature)) {
+                detectedAreaId = area.id;
+                break;
+              }
+            }
+          } 
+          // Si es un Feature individual (Geoman a veces exporta así una sola capa)
+          else if (geoData.type === 'Feature') {
+            if (checkFeature(geoData)) {
               detectedAreaId = area.id;
-              break;
             }
           }
-        } 
-        // Si es un Feature individual (Geoman a veces exporta así una sola capa)
-        else if (geoData.type === 'Feature') {
-          if (checkFeature(geoData)) {
-            detectedAreaId = area.id;
-          }
+          
+        } catch (e) {
+          console.error('Error procesando polígono', e);
         }
-        
-      } catch (e) {
-        console.error('Error procesando polígono', e);
+        if (detectedAreaId) break;
       }
-      if (detectedAreaId) break;
-    }
 
-    if (detectedAreaId) {
-      this.snackBar.open('¡Área de mapa detectada automáticamente!', 'Cerrar', { duration: 3000, panelClass: 'snackbar-success' });
-      this.autoSelectBarrioByMapArea(detectedAreaId);
-    } else {
-      this.snackBar.open('La dirección no coincide con ninguna zona de entrega mapeada.', 'Cerrar', { duration: 4000, panelClass: 'snackbar-warning' });
+      if (detectedAreaId) {
+        this.snackBar.open('¡Área de mapa detectada automáticamente!', 'Cerrar', { duration: 3000, panelClass: 'snackbar-success' });
+        this.autoSelectBarrioByMapArea(detectedAreaId);
+      } else {
+        this.snackBar.open('La dirección no coincide con ninguna zona de entrega mapeada.', 'Cerrar', { duration: 4000, panelClass: 'snackbar-warning' });
+      }
+    } catch (error) {
+      console.error('Error detectando área del mapa:', error);
+      this.snackBar.open('Error al procesar la ubicación del mapa.', 'Cerrar', { duration: 3000, panelClass: 'snackbar-error' });
     }
   }
 
@@ -489,6 +515,10 @@ export class OrderComponent implements AfterViewInit {
         
         this.seleccionarTabulador(tabId);
       }
+      
+      // Deshabilitar los campos de zona y barrio para que solo el mapa pueda actualizarlos
+      this.orderForm.get('zoneid')?.disable();
+      this.orderForm.get('idNeiborhood')?.disable();
     } catch (e) {
       console.error('Error checking user tabulator:', e);
     }
@@ -597,12 +627,11 @@ export class OrderComponent implements AfterViewInit {
 
 
   seleccionarTabulador(idtabulador: any) {
-    
     this.tabuladorSeleccionado = this.tabuladores?.find(e=> e.id == idtabulador);
     this.zonaSeleccionada = undefined;
     this.barrioSeleccionado = undefined;
     
-    if (this.map && this.tabuladorSeleccionado) {
+    if (this.map && this.tabuladorSeleccionado && typeof L !== 'undefined') {
       this.renderTabuladorAreas();
     }
   }
