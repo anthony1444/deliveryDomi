@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { OrderService } from '../../../../../orders/services/order.service';
-import { Order } from '../interfaces/Order';
+import { Order, OrderStatus } from '../interfaces/Order';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -53,14 +53,17 @@ export class MyOrdersComponent {
     });
   }
 
-  getStatusLabel(status: number): string {
-    const statusMap = {
-      0: 'Pendiente',
-      1: 'En camino',
-      2: 'Asignado',
-      3: 'Entregado'
-    } as any;
-    return statusMap[status] || 'Desconocido';
+  readonly OrderStatus = OrderStatus;
+
+  getStatusLabel(status: OrderStatus): string {
+    const statusMap: Record<OrderStatus, string> = {
+      [OrderStatus.Pendiente]: 'Pendiente',
+      [OrderStatus.EnCamino]:  'En camino',
+      [OrderStatus.Entregado]: 'Entregado',
+      [OrderStatus.Cancelado]: 'Cancelado',
+      [OrderStatus.Ocupada]:   'Ocupada',
+    };
+    return statusMap[status] ?? 'Desconocido';
   }
 
 
@@ -70,16 +73,16 @@ export class MyOrdersComponent {
       return;
     }
 
-    const updatedOrder:Order = { 
-      ...order, 
-      delivererId: this.userId, 
-      status: 3 // Estado "En camino"
+    const updatedOrder: Order = {
+      ...order,
+      delivererId: this.userId,
+      status: OrderStatus.Entregado,
     };
     console.log(updatedOrder);
-    
+
     this.orderService.updateOrder(String(order.id), updatedOrder).then(() => {
-      console.log('Orden aceptada:', updatedOrder);
-      this.loadOrdersByField('status', 3); // Recargar órdenes pendientes
+      console.log('Orden completada:', updatedOrder);
+      this.loadOrdersByField('status', OrderStatus.EnCamino);
     });
   }
 }

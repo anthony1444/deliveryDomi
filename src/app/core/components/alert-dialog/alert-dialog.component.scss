@@ -1,10 +1,28 @@
 mat-dialog-content {
-    font-size: 16px;
-    margin-bottom: 20px;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+mat-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.countdown-container {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.countdown-label {
+  font-size: 13px;
+  color: #666;
+  text-align: right;
+
+  &.urgent {
+    color: #f44336;
+    font-weight: 600;
   }
-  mat-dialog-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-  }
-  
+}

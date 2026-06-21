@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { OrderService } from '../../../../../orders/services/order.service';
-import { Order } from '../interfaces/Order';
+import { Order, OrderStatus } from '../interfaces/Order';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -28,7 +28,7 @@ export class OrdersComponent {
       this.userId = this.user.uid;
     }
 
-    this.loadOrdersByField('status', 1);
+    this.loadOrdersByField('status', OrderStatus.Pendiente);
   }
 
   loadOrdersByField<T>(field: keyof Order, value: T) {
@@ -57,51 +57,50 @@ export class OrdersComponent {
     this.orderService.deleteOrder(order);
   }
 
-  getStatusText(status: number | undefined): string {
-    switch (status) {
-      case 1: return 'Pendiente';
-      case 2: return 'Enviado';
-      case 3: return 'Cancelado';
-      default: return 'Desconocido';
-    }
-  }
+  readonly OrderStatus = OrderStatus;
 
-  getStatusLabel(status: number): string {
-    const statusMap = {
-      0: 'Pendiente',
-      1: 'En camino',
-      2: 'Entregado',
-      3: 'Cancelado'
-    } as any;
-    return statusMap[status] || 'Desconocido';
+  getStatusLabel(status: OrderStatus): string {
+    const statusMap: Record<OrderStatus, string> = {
+      [OrderStatus.Pendiente]: 'Pendiente',
+      [OrderStatus.EnCamino]:  'En camino',
+      [OrderStatus.Entregado]: 'Entregado',
+      [OrderStatus.Cancelado]: 'Cancelado',
+      [OrderStatus.Ocupada]:   'Ocupada',
+    };
+    return statusMap[status] ?? 'Desconocido';
   }
 
   acceptOrder(order: Order): void {
-    this.alertService.showAlert('Confirmación', '¿Deseas marcar este pedido como entregado?', 'Sí', 'Cancelar')
-      .subscribe(confirmed => {
-        if (confirmed) {
-          if (!this.userId) {
-            console.error('Usuario no autenticado.');
-            return;
-          }
+    if (!this.userId) {
+      console.error('Usuario no autenticado.');
+      return;
+    }
 
-          const updatedOrder: Order = {
-            ...order,
-            delivererId: this.userId,
-            status: 2 // Estado "En camino"
-          };
-          console.log(updatedOrder);
+    const ocupadaOrder: Order = { ...order, status: OrderStatus.Ocupada, delivererId: this.userId };
 
-          this.orderService.updateOrder(String(order.id), updatedOrder)
-            .then(() => {
-              console.log('Orden aceptada:', updatedOrder);
-              this.loadOrdersByField('status', 1); // Recargar órdenes pendientes
-            })
-            .catch(err => {
-              console.error('Error al aceptar la orden:', err);
+    // Reservar: marca como Ocupada y registra reset automático si el cliente se desconecta
+    this.orderService.reserveOrder(String(order.id), ocupadaOrder).then(() => {
+
+      this.alertService.showAlert('Confirmación', '¿Deseas tomar este pedido?', 'Sí', 'Cancelar', 15)
+        .subscribe(confirmed => {
+          if (confirmed) {
+            // Confirma: cancela el reset por desconexión y pasa a En camino
+            this.orderService.cancelDisconnectReset(String(order.id)).then(() => {
+              const enCaminoOrder: Order = { ...ocupadaOrder, status: OrderStatus.EnCamino };
+              this.orderService.updateOrder(String(order.id), enCaminoOrder)
+                .catch(err => console.error('Error al confirmar la orden:', err));
             });
-        }
-      });
+          } else {
+            // Cancela manualmente: cancela el reset y libera la orden
+            this.orderService.cancelDisconnectReset(String(order.id)).then(() => {
+              const liberadaOrder: Order = { ...order, status: OrderStatus.Pendiente, delivererId: '' };
+              this.orderService.updateOrder(String(order.id), liberadaOrder)
+                .catch(err => console.error('Error al liberar la orden:', err));
+            });
+          }
+        });
+
+    }).catch(err => console.error('Error al reservar la orden:', err));
   }
 }
 

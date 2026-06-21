@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { first, map, Observable } from 'rxjs';
-import { Order } from '../../features/components/admin/orders/interfaces/Order';
+import { Order, OrderStatus } from '../../features/components/admin/orders/interfaces/Order';
 import { equalTo, orderByChild, query, ref } from 'firebase/database';
 import { HttpClient } from '@angular/common/http';
 
@@ -64,6 +64,21 @@ export class OrderService {
   // 📌 Actualizar Pedido
   updateOrder(id: string, order: Order): Promise<void> {
     return this.db.object(`${this.ordersPath}/${id}`).update(order);
+  }
+
+  // 📌 Reservar orden como Ocupada + registrar reset automático si el cliente se desconecta
+  reserveOrder(id: string, ocupadaOrder: Order): Promise<void> {
+    const orderRef = this.db.database.ref(`${this.ordersPath}/${id}`);
+    // El servidor ejecuta esto solo si el cliente se desconecta antes de cancelarlo
+    return orderRef.onDisconnect().update({
+      status: OrderStatus.Pendiente,
+      delivererId: ''
+    }).then(() => orderRef.update(ocupadaOrder));
+  }
+
+  // 📌 Cancelar el reset por desconexión (llamar al confirmar o liberar manualmente)
+  cancelDisconnectReset(id: string): Promise<void> {
+    return this.db.database.ref(`${this.ordersPath}/${id}`).onDisconnect().cancel();
   }
 
   // 📌 Eliminar Pedido

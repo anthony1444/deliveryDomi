@@ -7,7 +7,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { ModalComponent } from './modal/modal.component'; // Importar el modal
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Order } from '../interfaces/Order';
+import { Order, OrderStatus } from '../interfaces/Order';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
@@ -610,7 +610,7 @@ export class OrderComponent implements AfterViewInit {
         orderDate:  dateString.toISOString(),
         shippedDate:   dateString.toISOString(),
         totalAmount: totalAmount,
-        status: 1,
+        status: OrderStatus.Pendiente,
         shippingAddress: this.orderForm.value.shippingAddress,
         phone: this.orderForm.value.phone,
         createdAt:  dateString.toISOString(),
