@@ -1,27 +1,61 @@
-<ul class="order-list">
-  @for (order of orders; track order) {
-    <li class="order-item">
-      <mat-card class="order-card">
-        <mat-card-header>
-          <mat-card-title>Restaurante: {{ order.createdByUserName }}</mat-card-title>
-          <mat-card-subtitle>Estado: {{ getStatusLabel(order.status) }}</mat-card-subtitle>
-        </mat-card-header>
+<div class="orders-container">
+  <div class="page-header">
+    <h2 class="page-title">Pedidos disponibles</h2>
+    <span class="order-count">{{ orders.length }} pedido{{ orders.length !== 1 ? 's' : '' }}</span>
+  </div>
 
-        <mat-card-content>
-          <p><strong>Cliente:</strong> {{ order.customerName }}</p>
-          <p><strong>Dirección:</strong> {{ order.shippingAddress }}</p>
-          <p><strong>Total:</strong> 
-            
-            <span *ngIf="user && user.typeUser == '3'">{{ (order.totalAmount || 0) - 1000 | currency }}</span>
-            <span *ngIf="!user || user.typeUser != '3'">{{ order.totalAmount | currency }}</span>
-          </p>
-          <p *ngIf="order.delivererId"><strong>Domiciliario:</strong> {{ order.delivererId }}</p>
-        </mat-card-content>
-        <button *ngIf="user && user.typeUser == '3'" mat-button color="primary" (click)="acceptOrder(order)">
-          Aceptar Orden
-        </button>
+  <div class="empty-state" *ngIf="orders.length === 0">
+    <mat-icon class="empty-icon">inbox</mat-icon>
+    <p>No hay pedidos disponibles por ahora</p>
+  </div>
 
-      </mat-card>
-    </li>
-  }
-</ul>
+  <ul class="order-list">
+    @for (order of orders; track order) {
+      <li class="order-item">
+        <mat-card class="order-card status-border-{{ order.status }}">
+
+          <div class="card-top">
+            <div class="card-top-left">
+              <span class="status-badge status-badge-{{ order.status }}">
+                {{ getStatusLabel(order.status) }}
+              </span>
+              <span class="restaurant-name">{{ order.createdByUserName }}</span>
+            </div>
+            <div class="order-total">
+              <span class="total-label">Total</span>
+              <span class="total-value" *ngIf="user && user.typeUser == '3'">
+                {{ (order.totalAmount || 0) - 1000 | currency:'COP':'$':'1.0-0' }}
+              </span>
+              <span class="total-value" *ngIf="!user || user.typeUser != '3'">
+                {{ order.totalAmount | currency:'COP':'$':'1.0-0' }}
+              </span>
+            </div>
+          </div>
+
+          <mat-card-content class="card-info">
+            <div class="info-row">
+              <mat-icon class="info-icon">person</mat-icon>
+              <span>{{ order.customerName }}</span>
+            </div>
+            <div class="info-row">
+              <mat-icon class="info-icon">place</mat-icon>
+              <span class="address-text">{{ order.shippingAddress }}</span>
+            </div>
+            <div class="info-row" *ngIf="order.delivererId">
+              <mat-icon class="info-icon">delivery_dining</mat-icon>
+              <span>{{ order.delivererId }}</span>
+            </div>
+          </mat-card-content>
+
+          <mat-card-actions class="card-actions" *ngIf="user && user.typeUser == '3'">
+            <button mat-flat-button color="primary" class="accept-btn" (click)="acceptOrder(order)">
+              <mat-icon>check_circle</mat-icon>
+              Tomar pedido
+            </button>
+          </mat-card-actions>
+
+        </mat-card>
+      </li>
+    }
+  </ul>
+</div>

@@ -7,17 +7,26 @@
 .list-card {
   width: 100%;
   max-width: 1000px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  border-radius: var(--r-lg, 16px) !important;
+  box-shadow: var(--sh-md) !important;
+  background: var(--c-surface, #fff) !important;
+  overflow: hidden;
 }
 
 mat-card-header {
-  margin-bottom: 24px;
-  
+  margin-bottom: 16px;
+  padding: 20px 20px 0;
+
   mat-icon {
     margin-right: 12px;
-    color: #1976d2;
+    color: var(--c-primary, #FF6D00);
   }
+}
+
+mat-card-title {
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+  color: var(--c-text, #1A1F36) !important;
 }
 
 .spinner-container {
@@ -35,12 +44,13 @@ mat-card-header {
 }
 
 .badge {
-  background-color: #e3f2fd;
-  color: #1976d2;
-  padding: 4px 12px;
-  border-radius: 16px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  background-color: rgba(255, 109, 0, 0.1);
+  color: var(--c-primary, #FF6D00);
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-block;
 }
 
 .no-data {
@@ -48,22 +58,29 @@ mat-card-header {
   flex-direction: column;
   align-items: center;
   padding: 60px;
-  color: #666;
+  color: var(--c-text-2, #64748B);
 
   mat-icon {
     font-size: 48px;
     height: 48px;
     width: 48px;
     margin-bottom: 16px;
+    opacity: 0.3;
   }
 }
 
-tr.mat-row:hover {
-  background-color: #f9f9f9;
+tr.mat-mdc-row:hover td {
+  background-color: var(--c-ground, #F7F8FC) !important;
 }
 
-th.mat-header-cell {
-  font-weight: 600;
-  color: #333;
-  font-size: 0.95rem;
+th.mat-mdc-header-cell {
+  font-weight: 700 !important;
+  color: var(--c-text, #1A1F36) !important;
+  font-size: 0.8125rem !important;
+  background: var(--c-ground, #F7F8FC);
+}
+
+td.mat-mdc-cell {
+  font-size: 0.875rem;
+  color: var(--c-text, #1A1F36);
 }

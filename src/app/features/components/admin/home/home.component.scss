@@ -1,87 +1,104 @@
 .home-container {
-  padding: 24px;
+  padding: 0;
 }
 
+// ── Welcome banner ─────────────────────────────────────────────
 .welcome-banner {
-  background-color: #3f51b5; /* Angular Material Primary Color */
+  background: linear-gradient(135deg, var(--c-nav, #1A1F36) 0%, #252B45 100%);
   color: white;
-  padding: 30px;
-  border-radius: 8px;
-  margin-bottom: 30px;
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 40px 32px;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: -40px;
+    top: -40px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: rgba(255, 109, 0, 0.12);
+    pointer-events: none;
+  }
 }
 
 .welcome-banner h1 {
-  margin: 0 0 10px;
-  font-size: 2.5rem;
-  font-weight: 300;
+  margin: 0 0 8px;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
 }
 
 .welcome-banner p {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1rem;
+  color: rgba(255,255,255,0.65);
+  font-weight: 400;
 }
 
+// ── Feature grid ───────────────────────────────────────────────
 .features-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  padding: 0 24px 24px;
 }
 
 .feature-card {
-  flex: 0 1 280px;
-  max-width: 280px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
-}
+  border-radius: var(--r-md, 10px) !important;
+  box-shadow: var(--sh-sm) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+  border-top: 3px solid transparent !important;
+  background: var(--c-surface, #fff) !important;
 
-.feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  &:hover {
+    box-shadow: var(--sh-lg) !important;
+    transform: translateY(-3px);
+    border-top-color: var(--c-primary, #FF6D00) !important;
+  }
 }
 
 .feature-icon-container {
-  background-color: rgba(63, 81, 181, 0.1);
+  background: rgba(255, 109, 0, 0.1);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
 }
 
 .feature-icon {
-  color: #3f51b5;
-}
-
-mat-card-header {
-  padding-bottom: 8px;
+  color: var(--c-primary, #FF6D00);
+  font-size: 22px;
+  height: 22px;
+  width: 22px;
 }
 
 mat-card-title {
-  font-size: 1.25rem;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  color: var(--c-text, #1A1F36);
 }
 
 mat-card-content {
-  color: #666;
-  min-height: 40px;
+  color: var(--c-text-2, #64748B);
+  font-size: 0.875rem;
+  min-height: 36px;
+  line-height: 1.5;
 }
 
 mat-card-actions {
   display: flex;
   justify-content: flex-end;
-  padding: 8px 16px !important;
+  padding: 0 8px 8px !important;
 }
 
 @media (max-width: 768px) {
-  .welcome-banner h1 {
-    font-size: 2rem;
-  }
-  
-  .feature-card {
-    flex: 0 1 100%;
-    max-width: 100%;
-  }
-} 
+  .welcome-banner { padding: 28px 20px; }
+  .welcome-banner h1 { font-size: 1.5rem; }
+  .features-grid { grid-template-columns: 1fr; padding: 0 16px 16px; }
+}
