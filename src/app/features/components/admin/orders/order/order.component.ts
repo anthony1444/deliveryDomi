@@ -107,6 +107,9 @@ export class OrderComponent implements AfterViewInit {
   isSearchingAddress: boolean = false;
   mapAreas: any[] = [];
 
+  private readonly GOOGLE_MAPS_API_KEY = 'AIzaSyCC2EegZVUTa26LdsYlpRm5pqLZIOQ-IH4';
+  private googleMaps: any = null;
+
   // Mapa
   map!: any;
   addressMarker: any = null;
@@ -169,8 +172,28 @@ export class OrderComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // Cargar dinámicamente Leaflet y sus plugins
     this.loadLeafletDynamically();
+    this.loadGoogleMapsSDK().catch(err => console.error('Error cargando Google Maps SDK:', err));
+  }
+
+  private loadGoogleMapsSDK(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if ((window as any).google?.maps) {
+        this.googleMaps = (window as any).google.maps;
+        resolve();
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${this.GOOGLE_MAPS_API_KEY}&libraries=places&language=es`;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        this.googleMaps = (window as any).google.maps;
+        resolve();
+      };
+      script.onerror = () => reject(new Error('No se pudo cargar Google Maps SDK'));
+      document.head.appendChild(script);
+    });
   }
 
   private async loadLeafletDynamically(): Promise<void> {
@@ -226,27 +249,25 @@ export class OrderComponent implements AfterViewInit {
       })
       .addTo(this.map);
 
-      // B) Añadir Reverse Geocoding al hacer clic en el mapa
+      // B) Reverse Geocoding con Google Geocoder SDK al hacer clic en el mapa
       this.map.on('click', (e: any) => {
         const lat = e.latlng.lat;
         const lon = e.latlng.lng;
-        
+
         this.snackBar.open('Buscando dirección...', '', { duration: 1500 });
-        
-        // Llamada a ArcGIS para Reverse Geocoding
-        const url = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode?location=${lon},${lat}&f=json`;
-        this.http.get<any>(url).subscribe({
-          next: (response) => {
-            if (response && response.address && response.address.Match_addr) {
-              this.handleMapLocationSelection(lat, lon, response.address.Match_addr);
+
+        if (this.googleMaps) {
+          const geocoder = new this.googleMaps.Geocoder();
+          geocoder.geocode({ location: { lat, lng: lon } }, (results: any[], status: string) => {
+            if (results && results.length > 0) {
+              this.handleMapLocationSelection(lat, lon, results[0].formatted_address);
             } else {
               this.handleMapLocationSelection(lat, lon, 'Dirección manual en mapa');
             }
-          },
-          error: () => {
-            this.handleMapLocationSelection(lat, lon, 'Dirección manual en mapa');
-          }
-        });
+          });
+        } else {
+          this.handleMapLocationSelection(lat, lon, 'Dirección manual en mapa');
+        }
       });
 
       setTimeout(() => {
@@ -328,21 +349,30 @@ export class OrderComponent implements AfterViewInit {
       debounceTime(500),
       distinctUntilChanged(),
       switchMap(value => {
-        if (!value || typeof value !== 'string' || value.length < 5) {
+        if (!value || typeof value !== 'string' || value.length < 3) {
           this.filteredAddresses = [];
           return of([]);
         }
+        if (!this.googleMaps) return of([]);
+
         this.isSearchingAddress = true;
-        
-        // Usamos ArcGIS World Geocoding Service. Es el mejor servicio gratuito para direcciones en Latinoamérica.
-        // Entiende perfectamente formatos como "Calle 45 # 23-14" y nombres de barrios sin tener que limpiar los textos.
-        const queryStr = encodeURIComponent(value);
-        const url = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?singleLine=${queryStr}&city=Medellin&region=Antioquia&countryCode=COL&maxLocations=7&f=json`;
-        
-        return this.http.get<any>(url).pipe(
-          map(response => response.candidates || []),
-          catchError(() => of([]))
-        );
+
+        // Google Places AutocompleteService (no tiene CORS, usa el SDK JS)
+        return new Observable<any[]>(observer => {
+          const service = new this.googleMaps.places.AutocompleteService();
+          service.getPlacePredictions(
+            {
+              input: value,
+              componentRestrictions: { country: 'co' },
+              location: new this.googleMaps.LatLng(6.2442, -75.5812),
+              radius: 30000,
+            },
+            (predictions: any[], status: string) => {
+              observer.next(predictions || []);
+              observer.complete();
+            }
+          );
+        });
       })
     ).subscribe(results => {
       this.isSearchingAddress = false;
@@ -351,17 +381,23 @@ export class OrderComponent implements AfterViewInit {
   }
 
   onAddressSelected(event: MatAutocompleteSelectedEvent) {
-    const selected = event.option.value; // Este es el candidato de ArcGIS
-    
+    const selected = event.option.value; // prediction de Google Places
     const displayName = this.displayAddress(selected);
     this.orderForm.get('shippingAddress')?.setValue(displayName, { emitEvent: false });
-    
-    // ArcGIS devuelve location: { x: lon, y: lat }
-    if (selected.location && selected.location.x && selected.location.y) {
-      const lon = selected.location.x;
-      const lat = selected.location.y;
-      
-      this.handleMapLocationSelection(lat, lon, displayName);
+
+    if (selected.place_id && this.googleMaps) {
+      // PlacesService necesita un elemento DOM como contenedor (requerido por la API)
+      const placesService = new this.googleMaps.places.PlacesService(document.createElement('div'));
+      placesService.getDetails(
+        { placeId: selected.place_id, fields: ['geometry'] },
+        (place: any, status: string) => {
+          if (place?.geometry?.location) {
+            const lat = place.geometry.location.lat();
+            const lng = place.geometry.location.lng();
+            this.handleMapLocationSelection(lat, lng, displayName);
+          }
+        }
+      );
     }
   }
 
@@ -387,8 +423,8 @@ export class OrderComponent implements AfterViewInit {
 
   displayAddress(candidate: any): string {
     if (!candidate) return '';
-    // ArcGIS devuelve la dirección formateada en 'address'
-    return candidate.address || 'Dirección desconocida';
+    // Google Places devuelve la dirección en 'description'
+    return candidate.description || candidate.address || 'Dirección desconocida';
   }
 
   private detectMapAreaFromCoordinates(lat: number, lon: number) {
