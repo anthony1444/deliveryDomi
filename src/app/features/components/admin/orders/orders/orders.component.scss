@@ -28,6 +28,22 @@
   border-radius: 20px;
 }
 
+// ── List loader ────────────────────────────────────────────────
+.list-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 72px 24px;
+  gap: 16px;
+}
+
+.list-loader-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--c-text-2, #64748B);
+}
+
 // ── Empty state ────────────────────────────────────────────────
 .empty-state {
   text-align: center;
@@ -64,11 +80,29 @@
   transition: box-shadow 0.2s, transform 0.2s;
   padding: 0 !important;
   overflow: hidden;
+  position: relative;
 
-  &:hover {
+  &:hover:not(.card-loading) {
     box-shadow: var(--sh-md) !important;
     transform: translateY(-1px);
   }
+
+  &.card-loading {
+    pointer-events: none;
+  }
+}
+
+// ── Loading overlay ────────────────────────────────────────────
+.card-loader-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-md, 10px);
 }
 
 // ── Card top row ───────────────────────────────────────────────
@@ -165,6 +199,11 @@
   gap: 4px;
 
   mat-icon { font-size: 18px; height: 18px; width: 18px; }
+
+  .btn-spinner {
+    display: inline-block;
+    ::ng-deep circle { stroke: white !important; }
+  }
 }
 
 @media (max-width: 600px) {

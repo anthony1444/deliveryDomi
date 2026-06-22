@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../../../../auth/services/auth.service';
 import { User } from '../../../../interfaces/authresponse.interface';
 import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { OrderConfirmDialogComponent } from './order-confirm-dialog/order-confirm-dialog.component';
 
@@ -15,13 +16,15 @@ import { OrderConfirmDialogComponent } from './order-confirm-dialog/order-confir
   templateUrl: './orders.component.html',
   standalone: true,
   styleUrls: ['./orders.component.scss'],
-  imports: [CommonModule, CurrencyPipe, MatCardModule, MatIconModule, MatButtonModule, MatDialogModule]
+  imports: [CommonModule, CurrencyPipe, MatCardModule, MatIconModule, MatButtonModule, MatDialogModule, MatProgressSpinnerModule]
 })
 export class OrdersComponent {
   orders: Order[] = [];
   user: User | null = null;
   userId: string | null = null;
   reservedOrder: Order | null = null;
+  reservingOrderId: string | null = null;
+  isLoading = true;
 
   get displayOrders(): Order[] {
     if (!this.reservedOrder) return this.orders;
@@ -43,9 +46,10 @@ export class OrdersComponent {
     this.orderService.getOrdersByField(field, value).subscribe({
       next: (data: any) => {
         this.orders = data;
-        console.log(`Órdenes filtradas por ${field}:`, this.orders);
+        this.isLoading = false;
       },
       error: (err: any) => {
+        this.isLoading = false;
         console.error(`Error al filtrar órdenes por ${field}:`, err);
       }
     });
@@ -86,8 +90,11 @@ export class OrdersComponent {
 
     const ocupadaOrder: Order = { ...order, status: OrderStatus.Ocupada, delivererId: this.userId };
 
+    this.reservingOrderId = String(order.id);
+
     // Reservar: marca como Ocupada y registra reset automático si el cliente se desconecta
     this.orderService.reserveOrder(String(order.id), ocupadaOrder).then(() => {
+      this.reservingOrderId = null;
       this.reservedOrder = ocupadaOrder;
 
       const displayAmount = String(this.user?.typeUser) === '3'
@@ -119,7 +126,10 @@ export class OrdersComponent {
         }
       });
 
-    }).catch(err => console.error('Error al reservar la orden:', err));
+    }).catch(err => {
+      this.reservingOrderId = null;
+      console.error('Error al reservar la orden:', err);
+    });
   }
 }
 
