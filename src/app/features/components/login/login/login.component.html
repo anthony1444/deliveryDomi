@@ -40,6 +40,12 @@
           </button>
         </mat-form-field>
 
+        <!-- Error banner -->
+        <div class="error-banner" *ngIf="loginError" role="alert">
+          <mat-icon class="error-icon">error_outline</mat-icon>
+          <span>{{ loginError }}</span>
+        </div>
+
         <!-- Actions row -->
         <div class="otherActions">
           <a class="link-create" (click)="goToCreate()">
