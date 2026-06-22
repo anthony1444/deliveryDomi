@@ -1,110 +1,196 @@
+// ── Background ─────────────────────────────────────────────────
 .home {
-  height: 100%;
   min-height: 100vh;
-  background: linear-gradient(145deg, #0D0F1C 0%, #1A1F36 60%, #111827 100%);
-  background-image:
-    linear-gradient(145deg, rgba(13,15,28,0.97) 0%, rgba(26,31,54,0.95) 100%),
-    url('../../../../../assets/logo.png');
-  background-repeat: no-repeat;
-  background-size: contain;
-  background-position: center;
+  background: linear-gradient(145deg, #0D0F1C 0%, #1A1F36 55%, #0F1626 100%);
+  position: relative;
+  overflow: hidden;
+
+  // Decorative glows
+  &::before {
+    content: '';
+    position: absolute;
+    top: -120px;
+    left: -120px;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,109,0,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -80px;
+    right: -80px;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,172,193,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
 }
 
 .wrapper {
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: 24px 16px;
   box-sizing: border-box;
+  position: relative;
+  z-index: 1;
 }
 
+// ── Card ───────────────────────────────────────────────────────
 .card {
   width: 100%;
-  max-width: 400px;
-  background: rgba(26,31,54,0.85) !important;
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,109,0,0.25) !important;
-  box-shadow: 0 0 40px rgba(255,109,0,0.08), 0 24px 60px rgba(0,0,0,0.5) !important;
-  border-radius: var(--r-lg, 16px) !important;
-  color: white;
-
-  // Form field overrides for dark background
-  ::ng-deep {
-    .mdc-text-field__input,
-    .mat-mdc-input-element { color: rgba(255,255,255,0.9) !important; }
-
-    .mdc-floating-label,
-    .mat-mdc-floating-label { color: rgba(255,255,255,0.55) !important; }
-
-    .mdc-notched-outline__leading,
-    .mdc-notched-outline__notch,
-    .mdc-notched-outline__trailing {
-      border-color: rgba(255,255,255,0.18) !important;
-    }
-
-    .mdc-text-field--outlined:not(.mdc-text-field--disabled):hover {
-      .mdc-notched-outline__leading,
-      .mdc-notched-outline__notch,
-      .mdc-notched-outline__trailing {
-        border-color: rgba(255,255,255,0.4) !important;
-      }
-    }
-
-    .mat-mdc-form-field-icon-prefix mat-icon,
-    .mat-mdc-form-field-icon-suffix mat-icon {
-      color: rgba(255,255,255,0.4) !important;
-    }
-  }
-
-  a {
-    color: rgba(255,255,255,0.55);
-    text-decoration: none;
-    font-size: 0.875rem;
-    transition: color 0.2s;
-    &:hover { color: var(--c-primary, #FF6D00); }
-  }
-}
-
-.otherActions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 0 0 20px;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.form-field {
-  width: 100%;
-  margin-bottom: 4px;
-}
-
-.btnLogin {
-  width: 100%;
-  background-color: var(--c-primary, #FF6D00) !important;
-  color: white !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.5px;
-  padding: 6px 0 !important;
-  border-radius: var(--r-sm, 6px) !important;
-
-  span { color: white; }
+  max-width: 420px;
+  background: rgba(22, 27, 50, 0.88) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,109,0,0.22) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04),
+    0 8px 32px rgba(0,0,0,0.5),
+    0 0 64px rgba(255,109,0,0.06) !important;
+  border-radius: 20px !important;
 }
 
 mat-card-content {
-  padding: 16px !important;
+  padding: 32px 28px 28px !important;
   display: flex;
   flex-direction: column;
 }
 
-mat-card-title {
-  font-size: 1.375rem !important;
-  font-weight: 800 !important;
+// ── Brand block ────────────────────────────────────────────────
+.brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.brand-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  box-shadow: 0 4px 24px rgba(255,109,0,0.4), 0 0 0 3px rgba(255,109,0,0.15);
+  margin-bottom: 14px;
+}
+
+.brand-name {
+  margin: 0 0 6px;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+}
+
+.brand-tagline {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: rgba(255,255,255,0.4);
+  text-align: center;
+  line-height: 1.4;
+}
+
+.divider {
+  height: 1px;
+  background: rgba(255,255,255,0.07);
+  margin: 24px 0 20px;
+}
+
+// ── Form fields — dark outline style ──────────────────────────
+.form-field {
+  width: 100%;
+  margin-bottom: 4px;
+
+  // MDC CSS custom properties for outlined variant on dark bg
+  --mdc-outlined-text-field-outline-color:         rgba(255,255,255,0.14);
+  --mdc-outlined-text-field-hover-outline-color:   rgba(255,255,255,0.32);
+  --mdc-outlined-text-field-focus-outline-color:   #FF6D00;
+  --mdc-outlined-text-field-label-text-color:      rgba(255,255,255,0.45);
+  --mdc-outlined-text-field-hover-label-text-color: rgba(255,255,255,0.65);
+  --mdc-outlined-text-field-focus-label-text-color: #FF6D00;
+  --mdc-outlined-text-field-input-text-color:      rgba(255,255,255,0.9);
+  --mdc-outlined-text-field-caret-color:           #FF6D00;
+  --mdc-outlined-text-field-container-shape:       10px;
+
+  // Override autofill blue tint
+  input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 100px rgba(22,27,50,0.95) inset !important;
+    -webkit-text-fill-color: rgba(255,255,255,0.9) !important;
+  }
+
+  // Prefix icon color
+  ::ng-deep .mat-mdc-form-field-icon-prefix mat-icon,
+  ::ng-deep .mat-mdc-form-field-icon-prefix .mat-icon {
+    color: rgba(255,255,255,0.35);
+    font-size: 20px;
+    height: 20px;
+    width: 20px;
+    padding: 0 6px 0 2px;
+  }
+}
+
+// Suffix toggle button (show/hide password)
+.toggle-pw {
+  color: rgba(255,255,255,0.35) !important;
+  width: 32px !important;
+  height: 32px !important;
+
+  mat-icon { font-size: 18px; }
+  &:hover { color: rgba(255,255,255,0.65) !important; }
+}
+
+// ── Create account link ────────────────────────────────────────
+.otherActions {
+  margin: 4px 0 20px;
+}
+
+.link-create {
+  font-size: 0.8125rem;
+  color: rgba(255,255,255,0.45);
+  cursor: pointer;
+  transition: color 0.2s;
+  text-decoration: none;
+
+  strong {
+    color: #FF6D00;
+    font-weight: 700;
+  }
+
+  &:hover {
+    color: rgba(255,255,255,0.7);
+    strong { color: #FF8C3A; }
+  }
+}
+
+// ── Login button ───────────────────────────────────────────────
+.btnLogin {
+  width: 100%;
+  height: 48px;
+  background: linear-gradient(135deg, #FF6D00 0%, #FF8C3A 100%) !important;
   color: white !important;
+  font-weight: 800 !important;
+  font-size: 0.9375rem !important;
+  letter-spacing: 0.5px;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 20px rgba(255,109,0,0.4) !important;
+  transition: box-shadow 0.2s, transform 0.15s !important;
+
+  &:hover {
+    box-shadow: 0 6px 28px rgba(255,109,0,0.55) !important;
+    transform: translateY(-1px);
+  }
+
+  &:active { transform: translateY(0); }
 }
 
 @media (max-width: 480px) {
-  .otherActions { flex-direction: column; align-items: flex-start; }
+  mat-card-content { padding: 24px 20px 20px !important; }
+  .brand-logo { width: 60px; height: 60px; }
+  .brand-name { font-size: 1.25rem; }
 }

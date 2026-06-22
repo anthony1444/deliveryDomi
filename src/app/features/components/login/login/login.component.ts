@@ -6,6 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatLabel } from '@angular/material/form-field';
 import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { Route, RouterModule } from '@angular/router';
 import { FormControl } from '@angular/forms';
@@ -27,6 +28,7 @@ import { MessagingService } from '../../../../messaging/messaging.service';
         MatFormFieldModule,
         MatLabel,
         MatCardModule,
+        MatIconModule,
         MatSidenavModule,
         ReactiveFormsModule,
     ],
@@ -39,6 +41,7 @@ export class LoginComponent {
 
   email: FormControl = new FormControl('');
   password: FormControl = new FormControl('');
+  showPassword = false;
 
   constructor(private authService: AuthService, public route:Router, public messagingService: MessagingService) {
     const userData = this.authService.getUserData();
