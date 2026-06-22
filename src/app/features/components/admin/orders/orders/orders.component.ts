@@ -90,8 +90,12 @@ export class OrdersComponent {
     this.orderService.reserveOrder(String(order.id), ocupadaOrder).then(() => {
       this.reservedOrder = ocupadaOrder;
 
+      const displayAmount = String(this.user?.typeUser) === '3'
+        ? (ocupadaOrder.totalAmount || 0) - 1000
+        : (ocupadaOrder.totalAmount || 0);
+
       const dialogRef = this.dialog.open(OrderConfirmDialogComponent, {
-        data: { order: ocupadaOrder, timeout: 15 },
+        data: { order: ocupadaOrder, timeout: 15, displayAmount },
         width: '360px',
         panelClass: 'order-confirm-panel'
       });

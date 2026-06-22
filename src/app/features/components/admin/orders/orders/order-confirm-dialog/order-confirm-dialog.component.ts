@@ -9,6 +9,7 @@ import { Order } from '../../interfaces/Order';
 export interface OrderConfirmData {
   order: Order;
   timeout: number;
+  displayAmount: number;
 }
 
 @Component({
