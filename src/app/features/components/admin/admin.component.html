@@ -1,7 +1,22 @@
 <mat-sidenav-container class="sidenav-container">
   <mat-sidenav #sidenav [mode]="isMobile ? 'over' : 'side'" [(opened)]="opened" class="sidenav">
     <div class="logo-container">
-      <img src="assets/logo.png" alt="App Logo" class="logo-image">
+      <svg class="logo-svg" viewBox="0 0 88 88" xmlns="http://www.w3.org/2000/svg" aria-label="Servi App">
+        <defs>
+          <clipPath id="clip-left">  <rect x="0"  y="0" width="44" height="88"/></clipPath>
+          <clipPath id="clip-right"> <rect x="44" y="0" width="44" height="88"/></clipPath>
+        </defs>
+        <circle cx="44" cy="44" r="42" fill="#FF6D00" clip-path="url(#clip-left)"/>
+        <circle cx="44" cy="44" r="42" fill="#252B45" clip-path="url(#clip-right)"/>
+        <circle cx="44" cy="44" r="42" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+        <!-- Divider line -->
+        <line x1="44" y1="2" x2="44" y2="86" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+        <!-- S -->
+        <text x="22" y="58" font-family="'Plus Jakarta Sans',sans-serif" font-weight="900" font-size="36" fill="white" text-anchor="middle">S</text>
+        <!-- E -->
+        <text x="66" y="58" font-family="'Plus Jakarta Sans',sans-serif" font-weight="900" font-size="36" fill="white" text-anchor="middle">E</text>
+      </svg>
+      <span class="logo-label">Servi App</span>
     </div>
     <mat-nav-list>
       <ng-container *ngFor="let link of navLinks">
