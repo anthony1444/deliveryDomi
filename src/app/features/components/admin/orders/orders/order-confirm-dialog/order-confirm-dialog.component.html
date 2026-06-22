@@ -1,0 +1,81 @@
+<div class="dialog-header">
+  <div class="header-top">
+    <span class="status-badge status-badge-5">Reservando</span>
+    <span class="restaurant-chip">
+      <mat-icon class="chip-icon">storefront</mat-icon>
+      {{ data.order.createdByUserName }}
+    </span>
+  </div>
+  <button mat-icon-button class="close-btn" (click)="cancel()">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<mat-dialog-content class="dialog-body">
+
+  <!-- Total destacado -->
+  <div class="total-block">
+    <span class="total-label">Total del pedido</span>
+    <span class="total-value">{{ data.order.totalAmount | currency:'COP':'$':'1.0-0' }}</span>
+  </div>
+
+  <!-- Detalles del pedido -->
+  <div class="detail-list">
+    <div class="detail-row">
+      <div class="detail-icon-wrap">
+        <mat-icon>person</mat-icon>
+      </div>
+      <div class="detail-text">
+        <span class="detail-label">Cliente</span>
+        <span class="detail-value">{{ data.order.customerName }}</span>
+      </div>
+    </div>
+
+    <div class="detail-row" *ngIf="data.order.phone">
+      <div class="detail-icon-wrap">
+        <mat-icon>phone</mat-icon>
+      </div>
+      <div class="detail-text">
+        <span class="detail-label">Teléfono</span>
+        <span class="detail-value">{{ data.order.phone }}</span>
+      </div>
+    </div>
+
+    <div class="detail-row">
+      <div class="detail-icon-wrap">
+        <mat-icon>place</mat-icon>
+      </div>
+      <div class="detail-text">
+        <span class="detail-label">Dirección de entrega</span>
+        <span class="detail-value">{{ data.order.shippingAddress }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Countdown -->
+  <div class="countdown-block">
+    <div class="countdown-row">
+      <mat-icon class="timer-icon" [class.urgent]="countdown <= 5">timer</mat-icon>
+      <span class="countdown-text" [class.urgent]="countdown <= 5">
+        {{ countdown <= 5 ? '¡Confirma ahora!' : 'Tiempo para confirmar' }}
+      </span>
+      <span class="countdown-number" [class.urgent]="countdown <= 5">{{ countdown }}s</span>
+    </div>
+    <mat-progress-bar
+      mode="determinate"
+      [value]="progressValue"
+      [color]="countdown <= 5 ? 'warn' : 'primary'">
+    </mat-progress-bar>
+  </div>
+
+</mat-dialog-content>
+
+<mat-dialog-actions class="dialog-actions">
+  <button mat-stroked-button class="btn-cancel" (click)="cancel()">
+    Cancelar
+  </button>
+  <button mat-flat-button color="primary" class="btn-confirm" (click)="confirm()">
+    <mat-icon>check_circle</mat-icon>
+    Confirmar pedido
+  </button>
+</mat-dialog-actions>

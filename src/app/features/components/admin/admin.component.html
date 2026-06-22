@@ -25,6 +25,7 @@
             mat-list-item
             [routerLink]="link.path"
             routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: link.path === '/' }"
             (click)="isMobile && sidenav.close()"
           >
             <mat-icon>{{ link.icon }}</mat-icon>

@@ -1,27 +1,28 @@
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { OrderService } from '../../../../../orders/services/order.service';
 import { Order, OrderStatus } from '../interfaces/Order';
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../../../../auth/services/auth.service';
 import { User } from '../../../../interfaces/authresponse.interface';
-import { AlertService } from '../../../../../core/services/alert.service';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { OrderConfirmDialogComponent } from './order-confirm-dialog/order-confirm-dialog.component';
 
 @Component({
   selector: 'app-orders',
   templateUrl: './orders.component.html',
   standalone: true,
   styleUrls: ['./orders.component.scss'],
-  imports: [CommonModule, MatCardModule, MatIconModule, MatButtonModule]
+  imports: [CommonModule, CurrencyPipe, MatCardModule, MatIconModule, MatButtonModule, MatDialogModule]
 })
 export class OrdersComponent {
   orders: Order[] = [];
   user: User | null = null;
   userId: string | null = null; // ID del usuario logueado
 
-  constructor(public orderService: OrderService, private authService: AuthService, private alertService: AlertService) {
+  constructor(public orderService: OrderService, private authService: AuthService, private dialog: MatDialog) {
     const userJson = localStorage.getItem('user');
     if (userJson) {
       this.user = JSON.parse(userJson) as User;
@@ -81,24 +82,29 @@ export class OrdersComponent {
     // Reservar: marca como Ocupada y registra reset automático si el cliente se desconecta
     this.orderService.reserveOrder(String(order.id), ocupadaOrder).then(() => {
 
-      this.alertService.showAlert('Confirmación', '¿Deseas tomar este pedido?', 'Sí', 'Cancelar', 15)
-        .subscribe(confirmed => {
-          if (confirmed) {
-            // Confirma: cancela el reset por desconexión y pasa a En camino
-            this.orderService.cancelDisconnectReset(String(order.id)).then(() => {
-              const enCaminoOrder: Order = { ...ocupadaOrder, status: OrderStatus.EnCamino };
-              this.orderService.updateOrder(String(order.id), enCaminoOrder)
-                .catch(err => console.error('Error al confirmar la orden:', err));
-            });
-          } else {
-            // Cancela manualmente: cancela el reset y libera la orden
-            this.orderService.cancelDisconnectReset(String(order.id)).then(() => {
-              const liberadaOrder: Order = { ...order, status: OrderStatus.Pendiente, delivererId: '' };
-              this.orderService.updateOrder(String(order.id), liberadaOrder)
-                .catch(err => console.error('Error al liberar la orden:', err));
-            });
-          }
-        });
+      const dialogRef = this.dialog.open(OrderConfirmDialogComponent, {
+        data: { order: ocupadaOrder, timeout: 15 },
+        width: '360px',
+        panelClass: 'order-confirm-panel'
+      });
+
+      dialogRef.afterClosed().subscribe(confirmed => {
+        if (confirmed) {
+          // Confirma: cancela el reset por desconexión y pasa a En camino
+          this.orderService.cancelDisconnectReset(String(order.id)).then(() => {
+            const enCaminoOrder: Order = { ...ocupadaOrder, status: OrderStatus.EnCamino };
+            this.orderService.updateOrder(String(order.id), enCaminoOrder)
+              .catch(err => console.error('Error al confirmar la orden:', err));
+          });
+        } else {
+          // Cancela manualmente: cancela el reset y libera la orden
+          this.orderService.cancelDisconnectReset(String(order.id)).then(() => {
+            const liberadaOrder: Order = { ...order, status: OrderStatus.Pendiente, delivererId: '' };
+            this.orderService.updateOrder(String(order.id), liberadaOrder)
+              .catch(err => console.error('Error al liberar la orden:', err));
+          });
+        }
+      });
 
     }).catch(err => console.error('Error al reservar la orden:', err));
   }
