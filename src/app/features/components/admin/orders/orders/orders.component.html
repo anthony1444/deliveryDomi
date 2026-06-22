@@ -1,16 +1,16 @@
 <div class="orders-container">
   <div class="page-header">
     <h2 class="page-title">Pedidos disponibles</h2>
-    <span class="order-count">{{ orders.length }} pedido{{ orders.length !== 1 ? 's' : '' }}</span>
+    <span class="order-count">{{ displayOrders.length }} pedido{{ displayOrders.length !== 1 ? 's' : '' }}</span>
   </div>
 
-  <div class="empty-state" *ngIf="orders.length === 0">
+  <div class="empty-state" *ngIf="displayOrders.length === 0">
     <mat-icon class="empty-icon">inbox</mat-icon>
     <p>No hay pedidos disponibles por ahora</p>
   </div>
 
   <ul class="order-list">
-    @for (order of orders; track order) {
+    @for (order of displayOrders; track order) {
       <li class="order-item">
         <mat-card class="order-card status-border-{{ order.status }}">
 
@@ -48,9 +48,11 @@
           </mat-card-content>
 
           <mat-card-actions class="card-actions" *ngIf="user && user.typeUser == '3'">
-            <button mat-flat-button color="primary" class="accept-btn" (click)="acceptOrder(order)">
+            <button mat-flat-button color="primary" class="accept-btn"
+              [disabled]="!!reservedOrder"
+              (click)="acceptOrder(order)">
               <mat-icon>check_circle</mat-icon>
-              Tomar pedido
+              {{ reservedOrder?.id === order.id ? 'Confirmando...' : 'Tomar pedido' }}
             </button>
           </mat-card-actions>
 

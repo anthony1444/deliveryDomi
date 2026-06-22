@@ -20,7 +20,14 @@ import { OrderConfirmDialogComponent } from './order-confirm-dialog/order-confir
 export class OrdersComponent {
   orders: Order[] = [];
   user: User | null = null;
-  userId: string | null = null; // ID del usuario logueado
+  userId: string | null = null;
+  reservedOrder: Order | null = null;
+
+  get displayOrders(): Order[] {
+    if (!this.reservedOrder) return this.orders;
+    const alreadyIn = this.orders.some(o => o.id === this.reservedOrder!.id);
+    return alreadyIn ? this.orders : [this.reservedOrder, ...this.orders];
+  }
 
   constructor(public orderService: OrderService, private authService: AuthService, private dialog: MatDialog) {
     const userJson = localStorage.getItem('user');
@@ -81,6 +88,7 @@ export class OrdersComponent {
 
     // Reservar: marca como Ocupada y registra reset automático si el cliente se desconecta
     this.orderService.reserveOrder(String(order.id), ocupadaOrder).then(() => {
+      this.reservedOrder = ocupadaOrder;
 
       const dialogRef = this.dialog.open(OrderConfirmDialogComponent, {
         data: { order: ocupadaOrder, timeout: 15 },
@@ -89,6 +97,7 @@ export class OrdersComponent {
       });
 
       dialogRef.afterClosed().subscribe(confirmed => {
+        this.reservedOrder = null;
         if (confirmed) {
           // Confirma: cancela el reset por desconexión y pasa a En camino
           this.orderService.cancelDisconnectReset(String(order.id)).then(() => {
