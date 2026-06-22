@@ -423,8 +423,10 @@ export class OrderComponent implements AfterViewInit {
 
   displayAddress(candidate: any): string {
     if (!candidate) return '';
-    // Google Places devuelve la dirección en 'description'
-    return candidate.description || candidate.address || 'Dirección desconocida';
+    // Cuando viene del mapa (click/geocoder) se guarda como string directo
+    if (typeof candidate === 'string') return candidate;
+    // Cuando viene de Google Places autocomplete, trae 'description'
+    return candidate.description || candidate.name || candidate.formatted_address || '';
   }
 
   private detectMapAreaFromCoordinates(lat: number, lon: number) {
